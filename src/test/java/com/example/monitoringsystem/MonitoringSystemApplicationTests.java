@@ -8,6 +8,7 @@ class MonitoringSystemApplicationTests {
 
     @Test
     void contextLoads() {
+
     }
 
 }
