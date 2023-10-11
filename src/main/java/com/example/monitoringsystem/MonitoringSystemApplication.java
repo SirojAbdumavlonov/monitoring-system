@@ -9,6 +9,7 @@ public class MonitoringSystemApplication {
     public static void main(String[] args) {
         SpringApplication.run(MonitoringSystemApplication.class, args);
         //hello
+        //Safixan
     }
 
 }
