@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.example.monitoringsystem.entity.Department;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
@@ -22,5 +23,5 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
             )
     List<Department> findDepartmentsByAddress(Long id, String address2);
 
-            Department findByDepartmentName(String departmentName);
+            Optional<Department> findByDepartmentName(String departmentName);
 }
