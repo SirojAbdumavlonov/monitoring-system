@@ -1,0 +1,23 @@
+1. Sign in and sign up pages
+2. Additional information about branch
+3. Filling blanks
+4. Report about all records
+
+
+1. Get
+2. Post
+3. Put
+4. Delete
+
+1) Signing up
+@PostMapping("/sign-up")-only for super-admin
+    1.
+2) Sign in
+@PostMapping("/sing-in")
+    1.Unique user-id
+    2.Password  -> super-admin`s decision
+
+3) @GetMapping("/?option=filling")
+    option=add-info - page about filling additional information about branches' needs
+    option=filling - page about filling daily blanks
+    option=report - page about reports
