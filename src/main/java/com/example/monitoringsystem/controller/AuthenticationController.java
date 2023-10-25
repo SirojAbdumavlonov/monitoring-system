@@ -26,18 +26,10 @@ public class AuthenticationController {
 
     @PostMapping("/sign-in")
     public ResponseEntity<?> signIn(@RequestBody SignInRequest signInRequest) {
-        SignUpRequest signUpRequest = new SignUpRequest();
-        boolean validName = signInRequest.getFullName().equals(signUpRequest.getFullName());
-        boolean validPassword = signInRequest.getPassword().equals(signUpRequest.getPassword());
 
+        userService.signIn(signInRequest);
 
-        if (validName && validPassword) {
-            return ResponseEntity.ok("Sign-in successful");
-        } else
-            return ResponseEntity.badRequest().body("Invalid Username or Password");
-
+        return ResponseEntity.ok("Data found!");
 
     }
-
-
 }
