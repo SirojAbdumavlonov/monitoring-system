@@ -4,10 +4,7 @@ import com.example.monitoringsystem.constants.RequestStatus;
 import com.example.monitoringsystem.entity.*;
 import com.example.monitoringsystem.model.SignInRequest;
 import com.example.monitoringsystem.model.SignUpRequest;
-import com.example.monitoringsystem.repository.DepartmentRepository;
-import com.example.monitoringsystem.repository.RequestOfUserRepository;
-import com.example.monitoringsystem.repository.TemporaryUserDetailsRepository;
-import com.example.monitoringsystem.repository.UserRepository;
+import com.example.monitoringsystem.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +20,7 @@ public class UserService {
     private final TemporaryUserDetailsRepository userDetailsRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ReasonOfDecliningRepository decliningRepository;
 
     public void saveUser(SignUpRequest signUpRequest) {
         RequestOfUser requestOfUser = RequestOfUser.builder()
@@ -54,5 +52,46 @@ public class UserService {
         if(!passwordEncoder.matches(userr.getPassword(), passwordEncoder.encode(signInRequest.getPassword()))){
             throw new RuntimeException("Incorrect user credentials");
         }
+    }
+
+    public void acceptRequest(Long id) {
+        TemporaryUserDetails temporary = getTemporaryUserDetails(id);
+
+        Userr user = Userr.builder()
+                .department(temporary.getDepartment())
+                .fullName(temporary.getFullName())
+                .password(temporary.getPassword())
+                .roleName(temporary.getRoleName())
+                .requestOfUser(temporary.getRequestOfUser())
+                .build();
+
+        userRepository.save(user);
+        userDetailsRepository.delete(temporary);
+
+        repository.updateRequestOfStatus(
+                RequestStatus.ACCEPTED, temporary.getRequestOfUser().getRequestId());
+    }
+
+    public void declineRequest(Long id, String reason) {
+        TemporaryUserDetails temporary = getTemporaryUserDetails(id);
+
+        ReasonOfDeclining reasonOfDeclining = ReasonOfDeclining.builder()
+                .declinedUserId(id)
+                .message(reason)
+                .build();
+
+        decliningRepository.save(reasonOfDeclining);
+
+        repository.updateRequestOfStatus(
+                RequestStatus.DECLINED, temporary.getRequestOfUser().getRequestId()
+        );
+    }
+
+    private TemporaryUserDetails getTemporaryUserDetails(Long id) {
+        TemporaryUserDetails temporary =
+                userDetailsRepository.findById(id).orElseThrow(
+                        ()-> new RuntimeException("No such user Found")
+                );
+        return temporary;
     }
 }
