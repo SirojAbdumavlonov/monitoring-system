@@ -32,6 +32,7 @@ public class UserService {
                 departmentRepository.findByDepartmentName(
                         signUpRequest.getBranch()).orElseThrow(() -> new RuntimeException("No such branch"));
 
+
         TemporaryUserDetails userDetails = TemporaryUserDetails.builder()
                 .fullName(signUpRequest.getFullName())
                 .password(passwordEncoder.encode(signUpRequest.getPassword()))
