@@ -3,12 +3,14 @@ package com.example.monitoringsystem.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 public class TemporaryUserDetails {
     @Id
     @GeneratedValue( // serial DB
