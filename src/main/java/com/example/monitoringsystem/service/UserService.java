@@ -8,6 +8,7 @@ import com.example.monitoringsystem.entity.TemporaryUserDetails;
 import com.example.monitoringsystem.model.SignUpRequest;
 import com.example.monitoringsystem.repository.DepartmentRepository;
 import com.example.monitoringsystem.repository.RequestOfUserRepository;
+import com.example.monitoringsystem.repository.TemporaryUserDetailsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +19,15 @@ import java.util.Optional;
 public class UserService {
     private final DepartmentRepository departmentRepository;
     private final RequestOfUserRepository repository;
+    private final TemporaryUserDetailsRepository userDetailsRepository;
 
     public void saveUser(SignUpRequest signUpRequest) {
         RequestOfUser requestOfUser = RequestOfUser.builder()
                 .status(RequestStatus.WAITING)
                 .build();
         Department department =
-                departmentRepository.findByDepartmentName(signUpRequest.getBranch()).orElseThrow(() -> new RuntimeException("No such branch"));
+                departmentRepository.findByDepartmentName(
+                        signUpRequest.getBranch()).orElseThrow(() -> new RuntimeException("No such branch"));
 
         TemporaryUserDetails userDetails = TemporaryUserDetails.builder()
                 .fullName(signUpRequest.getFullName())
@@ -35,6 +38,8 @@ public class UserService {
                 .build();
 
         repository.save(requestOfUser);
+
+        userDetailsRepository.save(userDetails);
 
     }
 }

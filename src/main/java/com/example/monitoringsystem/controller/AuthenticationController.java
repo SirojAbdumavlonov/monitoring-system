@@ -1,5 +1,6 @@
 package com.example.monitoringsystem.controller;
 
+import com.example.monitoringsystem.model.SignInRequest;
 import com.example.monitoringsystem.model.SignUpRequest;
 import com.example.monitoringsystem.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,18 @@ public class AuthenticationController {
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<?> singIn() {
-        return null;
+    public ResponseEntity<?> signIn(@RequestBody SignInRequest signInRequest) {
+        SignUpRequest signUpRequest = new SignUpRequest();
+        boolean validName = signInRequest.getFullName().equals(signUpRequest.getFullName());
+        boolean validPassword = signInRequest.getPassword().equals(signUpRequest.getPassword());
+
+
+        if (validName && validPassword) {
+            return ResponseEntity.ok("Sign-in successful");
+        } else
+            return ResponseEntity.badRequest().body("Invalid Username or Password");
+
+
     }
 
 
