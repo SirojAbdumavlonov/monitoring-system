@@ -12,9 +12,6 @@ public class ExactColumns {
     )
     private Long id;
 
-    @ElementCollection
-    private List<String> attributesNames;
-
     @ManyToOne
     @JoinColumn(
             name = "efficiency"
