@@ -15,6 +15,9 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     )
     List<Department> findAllDepartments();
 
+    @Override
+    List<Department> findAll();
+
     List<Department> findByAddress(String address);
 
 

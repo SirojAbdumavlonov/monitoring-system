@@ -18,4 +18,6 @@ public class Department {
     )
     private Location location;
 
+
+
 }
