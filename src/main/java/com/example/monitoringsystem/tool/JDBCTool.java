@@ -1,2 +1,5 @@
-package com.example.monitoringsystem.tool;public class JDBCTool {
+package com.example.monitoringsystem.tool;
+
+public class JDBCTool {
+
 }

@@ -20,11 +20,11 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     List<Department> findByAddress(String address);
 
-
-            @Query(
+    @Query(
                     "SELECT d FROM Department d WHERE d.address = ?2 AND d.id = ?1"
-            )
+    )
     List<Department> findDepartmentsByAddress(Long id, String address2);
+    Optional<Department> findByDepartmentName(String departmentName);
 
-            Optional<Department> findByDepartmentName(String departmentName);
+
 }

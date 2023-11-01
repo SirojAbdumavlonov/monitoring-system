@@ -83,7 +83,7 @@ public class ExactValuesService {
                 .newColumns(newColumns)
                 .build();
         exactColumnsRepository.save(exactColumns);
-
     }
+
 
 }

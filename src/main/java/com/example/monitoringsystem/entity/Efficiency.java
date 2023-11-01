@@ -14,7 +14,7 @@ public class Efficiency {
     private Long id;
 
     @ElementCollection
-    private List<Long> totalEfficiencies;
+    private List<Double> totalEfficiencies;
 
 
 }

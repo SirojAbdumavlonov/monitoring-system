@@ -2,13 +2,16 @@ package com.example.monitoringsystem.controller;
 
 import com.example.monitoringsystem.entity.ExactColumns;
 import com.example.monitoringsystem.model.AllColumns;
+import com.example.monitoringsystem.security.CurrentUserId;
 import com.example.monitoringsystem.service.ExactValuesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,6 +37,11 @@ public class ExactValuesController {
         exactValuesService.saveDailyData(allColumns);
         return ResponseEntity.ok("Saved successfully!");
     }
+
+
+
+
+
 
 
 

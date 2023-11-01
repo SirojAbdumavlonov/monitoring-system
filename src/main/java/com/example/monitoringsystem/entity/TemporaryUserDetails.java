@@ -21,7 +21,6 @@ public class TemporaryUserDetails {
     private RoleName roleName;
     private String password;
 
-
     @ManyToOne
     @JoinColumn(
             name = "department_id"
