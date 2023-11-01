@@ -25,6 +25,7 @@ public class ExactValuesController {
         return ResponseEntity.ok("Saved successfully!");
     }
 
+
     // daily configuration of the table which is controlled by admins
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN')")
