@@ -4,6 +4,7 @@ import com.example.monitoringsystem.entity.Department;
 import com.example.monitoringsystem.repository.ExactColumnsRepository;
 import com.example.monitoringsystem.security.CurrentUserId;
 import com.example.monitoringsystem.service.DepartmentService;
+import com.example.monitoringsystem.service.ExactColumnsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

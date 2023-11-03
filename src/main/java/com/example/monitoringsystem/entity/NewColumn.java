@@ -18,16 +18,17 @@ public class NewColumn {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @jakarta.persistence.Column(name = "column_id")
-
+    private Long columnId;
     private String name;
 
-    private String value;
+    @ElementCollection
+    private List<String> values;
 
     @ManyToOne
     @JoinColumn(
             name = "department_id"
     )
-    private Department id;
+    private Department department;
 
 
 }

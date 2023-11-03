@@ -19,6 +19,6 @@ public interface ExactColumnsRepository extends JpaRepository<ExactColumns,Long>
 //    )
 //    Optional<ExactColumns> findByDepartmentId(Long departmentId);
 
-    Optional<ExactColumns> findByDepartmentId_Id(Long departmentId);
+    List<ExactColumns> findByDepartmentId_Id(Long departmentId);
 
 }

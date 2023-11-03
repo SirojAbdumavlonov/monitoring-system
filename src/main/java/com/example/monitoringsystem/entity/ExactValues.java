@@ -25,10 +25,9 @@ public class ExactValues {
     private int monitor;
     private int employees;
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(
-            name = "new_column"
+            name = "department_id"
     )
-    private List<NewColumnsToExactValue> newColumns;
-
+    private Department department;
 }
