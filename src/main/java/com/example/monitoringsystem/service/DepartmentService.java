@@ -1,15 +1,18 @@
 package com.example.monitoringsystem.service;
 
 import com.example.monitoringsystem.entity.Department;
+import com.example.monitoringsystem.entity.ExactColumns;
 import com.example.monitoringsystem.entity.Location;
 import com.example.monitoringsystem.entity.Userr;
 import com.example.monitoringsystem.model.NewDepartment;
-import com.example.monitoringsystem.repository.DepartmentRepository;
-import com.example.monitoringsystem.repository.LocationRepository;
-import com.example.monitoringsystem.repository.UserRepository;
+import com.example.monitoringsystem.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,10 +21,11 @@ public class DepartmentService {
     private final LocationRepository locationRepository;
     private final UserRepository userRepository;
 
-    public List<Department> getAllDepartmentsData(){
+    public List<Department> getAllDepartmentsData() {
         return departmentRepository.findAllDepartments();
     }
-    public void saveNewDepartment(NewDepartment newDepartment){
+
+    public void saveNewDepartment(NewDepartment newDepartment) {
         Location location = Location.builder()
                 .lon(newDepartment.getLon())
                 .lat(newDepartment.getLat())
@@ -35,14 +39,16 @@ public class DepartmentService {
 
         locationRepository.save(location);
         departmentRepository.save(department);
-
     }
-    public Department findDepartmentOfUser(Long userId){
+
+    public Department findDepartmentOfUser(Long userId) {
         Userr found = userRepository.getReferenceById(userId);
         return found.getDepartment();
     }
-    public List<Department> findAllDepartments(){
+
+    public List<Department> findAllDepartments() {
         return departmentRepository.findAllDepartments();
     }
+
 
 }

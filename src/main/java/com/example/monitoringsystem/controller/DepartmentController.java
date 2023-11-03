@@ -1,6 +1,7 @@
 package com.example.monitoringsystem.controller;
 
 import com.example.monitoringsystem.entity.Department;
+import com.example.monitoringsystem.repository.ExactColumnsRepository;
 import com.example.monitoringsystem.security.CurrentUserId;
 import com.example.monitoringsystem.service.DepartmentService;
 import jakarta.validation.Valid;
@@ -22,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DepartmentController {
     private final DepartmentService departmentService;
-
+    private final ExactColumnsService exactColumnsService;
 
     @GetMapping("/")
     public ResponseEntity<?> getAllDepartments(){

@@ -3,6 +3,8 @@ package com.example.monitoringsystem.controller;
 import com.example.monitoringsystem.entity.ExactColumns;
 import com.example.monitoringsystem.model.AllColumns;
 import com.example.monitoringsystem.security.CurrentUserId;
+import com.example.monitoringsystem.service.DepartmentService;
+import com.example.monitoringsystem.service.ExactColumnsService;
 import com.example.monitoringsystem.service.ExactValuesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,8 @@ import java.util.Collection;
 public class ExactValuesController {
 
     private final ExactValuesService exactValuesService;
+    private final DepartmentService departmentService;
+    private final ExactColumnsService exactColumnsService;
 
 
     // fixed data
@@ -37,6 +41,16 @@ public class ExactValuesController {
         exactValuesService.saveDailyData(allColumns);
         return ResponseEntity.ok("Saved successfully!");
     }
+
+    @GetMapping("/daily-changes")
+    public ResponseEntity<?> getDailyData(@CurrentUserId String userId){
+
+        System.out.println("Hello");
+        Long id = Long.valueOf(userId);
+
+        return ResponseEntity.ok(exactColumnsService.getDailyData(id));
+    }
+
 
 
 

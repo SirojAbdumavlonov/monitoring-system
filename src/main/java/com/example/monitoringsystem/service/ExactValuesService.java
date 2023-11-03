@@ -5,6 +5,7 @@ import com.example.monitoringsystem.model.AllColumns;
 import com.example.monitoringsystem.model.NewColumnModel;
 import com.example.monitoringsystem.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -72,6 +73,7 @@ public class ExactValuesService {
             newColumns.add(newColumn);
         }
 
+
         ExactColumns exactColumns = ExactColumns
                 .builder()
                 .bankomats(allColumns.getBankomats())
@@ -84,6 +86,9 @@ public class ExactValuesService {
                 .build();
         exactColumnsRepository.save(exactColumns);
     }
+
+
+
 
 
 }

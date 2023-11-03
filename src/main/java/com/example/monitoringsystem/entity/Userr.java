@@ -1,5 +1,6 @@
 package com.example.monitoringsystem.entity;
 
+import com.example.monitoringsystem.entity.audit.DateAudit;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class Userr implements UserDetails {
+public class Userr extends DateAudit implements UserDetails{
     @Id
     @GeneratedValue( // serial DB
             strategy = GenerationType.IDENTITY
