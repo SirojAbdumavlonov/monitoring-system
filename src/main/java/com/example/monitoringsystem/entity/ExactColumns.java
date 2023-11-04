@@ -4,6 +4,7 @@ import com.example.monitoringsystem.entity.audit.DateAudit;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 public class ExactColumns extends DateAudit {
     @Id
     @GeneratedValue(
@@ -27,12 +29,6 @@ public class ExactColumns extends DateAudit {
     private int monitor;
     private int employees;
 
-
-    @ManyToOne
-    @JoinColumn(
-            name = "efficiency"
-    )
-    private Efficiency efficiency;
 
     @ManyToOne
     @JoinColumn(

@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -49,7 +50,7 @@ public class ExactValuesController {
     @GetMapping("/daily-changes")
     public ResponseEntity<?> getDailyData(@CurrentUserId String userId,
                                           @RequestParam(defaultValue = "today", required = false) String tab){
-
+        LocalDate today = LocalDate.now();
         Long id = Long.valueOf(userId);
         ColumnNames columnNames =
                 exactColumnsService.getNamesOfColumns(id);
@@ -60,24 +61,13 @@ public class ExactValuesController {
                     <ColumnNames, List<ExactColumns>>(columnNames, columnsList));
         }
         else if(tab.equals(Tab.TODAY)){
-            return ResponseEntity.ok(new DailyDataReturn<ColumnNames, Long>(columnNames, null));
+            ExactColumns columns =
+                    exactColumnsService.getTodayDailyFilledData(today, id);
+
+            return ResponseEntity.ok(new DailyDataReturn<ColumnNames, ExactColumns>(columnNames, columns));
         }
         logger.info("Error in GET request with param: {}", tab);
         throw new BadRequestException("Error");
     }
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
-    @GetMapping("/admin/daily-changes")
-    public ResponseEntity<?> getAllDailyDataForAdmins(){
-
-        return null;
-    }
-
-
-
-
-
-
-
-
 
 }

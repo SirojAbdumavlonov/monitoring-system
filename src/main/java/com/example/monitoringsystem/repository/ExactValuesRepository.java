@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ExactValuesRepository extends JpaRepository<ExactValues, Long> {
 
-
+    ExactValues findByDepartmentId(Long departmentId);
 }

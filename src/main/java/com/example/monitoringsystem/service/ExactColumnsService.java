@@ -1,6 +1,7 @@
 package com.example.monitoringsystem.service;
 
 import com.example.monitoringsystem.entity.ExactColumns;
+import com.example.monitoringsystem.exception.BadRequestException;
 import com.example.monitoringsystem.payload.ColumnNames;
 import com.example.monitoringsystem.repository.ColumnNamesRepository;
 import com.example.monitoringsystem.repository.ExactColumnsRepository;
@@ -8,6 +9,8 @@ import com.example.monitoringsystem.repository.NewColumnRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 
@@ -44,6 +47,12 @@ public class ExactColumnsService {
         namesOfColumnOfDefaultTable.addAll(namesOfNewColumns);
 
         return new ColumnNames(namesOfColumnOfDefaultTable);
+    }
+    public ExactColumns getTodayDailyFilledData(LocalDate today, Long userId){
+
+        Long departmentId = departmentService.findDepartmentOfUser(userId).getId();
+
+        return exactColumnsRepository.findByCreatedDateAndDepartmentId(today, departmentId);
     }
 
 }

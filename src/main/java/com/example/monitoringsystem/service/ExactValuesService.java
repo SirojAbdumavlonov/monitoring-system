@@ -4,10 +4,12 @@ import com.example.monitoringsystem.entity.*;
 import com.example.monitoringsystem.exception.BadRequestException;
 import com.example.monitoringsystem.model.AllColumns;
 import com.example.monitoringsystem.model.NewColumnModel;
+import com.example.monitoringsystem.model.WholeDepartment;
 import com.example.monitoringsystem.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +34,7 @@ public class ExactValuesService {
                         .builder()
                         .value(model.getValue())
                         .name(model.getColumnName())
-                        .departmentId(department)
+                        .department(department)
                         .build();
                 newColumnToExactValuesRepository.save(newColumn);
             }
@@ -54,8 +56,6 @@ public class ExactValuesService {
 
         Department department =
                 departmentRepository.getReferenceById(allColumns.getDepartmentId());
-
-        List<NewColumn> newColumns = new ArrayList<>();
 
         for (NewColumnModel model : allColumns.getNewColumns()) {
             //Firstly, I check if I have a column with this name
@@ -95,9 +95,21 @@ public class ExactValuesService {
                 .build();
         exactColumnsRepository.save(exactColumns);
     }
+    public WholeDepartment<ExactColumns, List<NewColumn>> getValues(LocalDate today){
 
+        ExactColumns exactColumns =
+                exactColumnsRepository.findByCreatedDate(today);
+        List<NewColumn> newColumn =
+                newColumnRepository.findByDepartmentId(exactColumns.getDepartment().getId());
 
+        return new WholeDepartment<>(exactColumns, newColumn);
+    }
+    public WholeDepartment<ExactValues, List<NewColumnsToExactValue>> getFixedValues(Long departmentId) {
+        ExactValues exactValues =
+                exactValuesRepository.findByDepartmentId(departmentId);
+        List<NewColumnsToExactValue> newColumnsToExactValueList =
+                newColumnToExactValuesRepository.findByDepartmentId(departmentId);
+        return new WholeDepartment<>(exactValues, newColumnsToExactValueList);
+    }
 
-
-
-}
+    }

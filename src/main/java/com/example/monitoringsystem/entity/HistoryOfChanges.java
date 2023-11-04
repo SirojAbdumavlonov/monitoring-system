@@ -1,5 +1,6 @@
 package com.example.monitoringsystem.entity;
 
+import com.example.monitoringsystem.entity.audit.DateAudit;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,20 +12,23 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class NewColumnsToExactValue {
+public class HistoryOfChanges extends DateAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-
-    private String value;
+    private String oldValue;
+    private String newValue;
 
     @ManyToOne
     @JoinColumn(
-            name = "department_id"
+            name = "user"
+    )
+    private Userr userWhoUpdated;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "deparment_id"
     )
     private Department department;
-
-
 }

@@ -16,4 +16,6 @@ public interface NewColumnRepository extends JpaRepository<NewColumn,Long> {
     public List<String> findNamesOfColumns(Long departmentId);
 
     public Optional<NewColumn> findByName(String name);
+
+    public List<NewColumn> findByDepartmentId(Long departmentId);
 }

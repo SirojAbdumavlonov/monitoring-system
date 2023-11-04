@@ -1,12 +1,11 @@
 package com.example.monitoringsystem.repository;
 
-import com.example.monitoringsystem.entity.Department;
 import com.example.monitoringsystem.entity.ExactColumns;
-import jakarta.persistence.ManyToOne;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,5 +19,9 @@ public interface ExactColumnsRepository extends JpaRepository<ExactColumns,Long>
 //    Optional<ExactColumns> findByDepartmentId(Long departmentId);
 
     List<ExactColumns> findByDepartmentId_Id(Long departmentId);
+
+    ExactColumns findByCreatedDateAndDepartmentId(LocalDate date, Long departmentId);
+
+    ExactColumns findByCreatedDate(LocalDate date);
 
 }
