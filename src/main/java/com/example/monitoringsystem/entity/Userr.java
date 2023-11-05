@@ -1,6 +1,6 @@
 package com.example.monitoringsystem.entity;
 
-import com.example.monitoringsystem.entity.audit.DateAudit;
+import com.example.monitoringsystem.entity.audit.DateAndTimeAudit;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,7 +10,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.nio.file.attribute.UserPrincipal;
 import java.util.Collection;
 import java.util.List;
 
@@ -19,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class Userr extends DateAudit implements UserDetails{
+public class Userr extends DateAndTimeAudit implements UserDetails{
     @Id
     @GeneratedValue( // serial DB
             strategy = GenerationType.IDENTITY

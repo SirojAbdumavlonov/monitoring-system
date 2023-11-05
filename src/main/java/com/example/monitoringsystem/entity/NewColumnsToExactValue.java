@@ -18,7 +18,7 @@ public class NewColumnsToExactValue {
 
     private String name;
 
-    private String value;
+    private int value;
 
     @ManyToOne
     @JoinColumn(

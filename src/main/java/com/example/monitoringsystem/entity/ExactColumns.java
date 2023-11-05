@@ -1,20 +1,18 @@
 package com.example.monitoringsystem.entity;
 
-import com.example.monitoringsystem.entity.audit.DateAudit;
+import com.example.monitoringsystem.entity.audit.DateAndTimeAudit;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ExactColumns extends DateAudit {
+public class ExactColumns extends DateAndTimeAudit {
     @Id
     @GeneratedValue(
             strategy = GenerationType.IDENTITY

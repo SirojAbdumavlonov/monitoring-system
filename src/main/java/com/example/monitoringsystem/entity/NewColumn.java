@@ -21,8 +21,7 @@ public class NewColumn {
     private Long columnId;
     private String name;
 
-    @ElementCollection
-    private List<String> values;
+    private int value;
 
     @ManyToOne
     @JoinColumn(

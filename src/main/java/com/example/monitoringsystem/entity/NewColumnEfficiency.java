@@ -1,6 +1,5 @@
 package com.example.monitoringsystem.entity;
 
-import com.example.monitoringsystem.entity.audit.DateAndTimeAudit;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,27 +7,20 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Data
 @Builder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class HistoryOfChanges extends DateAndTimeAudit {
+public class NewColumnEfficiency {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String oldValue;
-    private String newValue;
-
-    @ManyToOne
-    @JoinColumn(
-            name = "user"
-    )
-    private Userr userWhoUpdated;
+    private String name;
+    private Double value;
 
     @ManyToOne
     @JoinColumn(
-            name = "deparment_id"
+            name = "efficiency_id"
     )
-    private Department department;
+    private Efficiency efficiency;
 }
