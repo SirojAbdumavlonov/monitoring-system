@@ -17,8 +17,9 @@ public class HistoryOfChanges extends DateAndTimeAudit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String oldValue;
-    private String newValue;
+    private int oldValue;
+    private int newValue;
+    private String columnName;
 
     @ManyToOne
     @JoinColumn(

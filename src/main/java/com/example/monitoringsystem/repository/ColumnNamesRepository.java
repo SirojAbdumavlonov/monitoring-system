@@ -13,4 +13,6 @@ public interface ColumnNamesRepository extends JpaRepository<ColumnNames, Long> 
             "SELECT c.columnName FROM ColumnNames c"
     )
     List<String> findAllColumns();
+
+    boolean existsByColumnName(String columnName);
 }

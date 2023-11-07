@@ -4,6 +4,7 @@ import com.example.monitoringsystem.constants.Tab;
 import com.example.monitoringsystem.entity.ExactColumns;
 import com.example.monitoringsystem.exception.BadRequestException;
 import com.example.monitoringsystem.model.AllColumns;
+import com.example.monitoringsystem.model.UpdateRequest;
 import com.example.monitoringsystem.payload.ColumnNames;
 import com.example.monitoringsystem.payload.DailyDataReturn;
 import com.example.monitoringsystem.security.CurrentUserId;
@@ -69,5 +70,12 @@ public class ExactValuesController {
         logger.info("Error in GET request with param: {}", tab);
         throw new BadRequestException("Error");
     }
+    @PutMapping("/daily-changes/update/{departmentId}")
+    public ResponseEntity<?> updateFieldInDb(@PathVariable Long departmentId,
+                                             @CurrentUserId String currentUserId,
+                                             @RequestBody UpdateRequest updateRequest){
+        exactValuesService.updateColumns(updateRequest, departmentId, currentUserId);
 
+        return null;
+    }
 }

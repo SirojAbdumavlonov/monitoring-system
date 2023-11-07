@@ -4,8 +4,10 @@ import com.example.monitoringsystem.entity.*;
 import com.example.monitoringsystem.exception.BadRequestException;
 import com.example.monitoringsystem.model.AllColumns;
 import com.example.monitoringsystem.model.NewColumnModel;
+import com.example.monitoringsystem.model.UpdateRequest;
 import com.example.monitoringsystem.model.WholeDepartment;
 import com.example.monitoringsystem.repository.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,10 @@ public class ExactValuesService {
     private final NewColumnRepository newColumnRepository;
     private final DepartmentRepository departmentRepository;
     private final NewColumnToExactValuesRepository newColumnToExactValuesRepository;
+    private final ExactColumnsMapper exactColumnsMapper;
+    private final ColumnNamesRepository columnNamesRepository;
+    private final UserRepository userRepository;
+    private final HistoryOfChangesRepository historyOfChangesRepository;
 
     public void saveData(AllColumns allColumns) {
 
@@ -110,6 +116,38 @@ public class ExactValuesService {
         List<NewColumnsToExactValue> newColumnsToExactValueList =
                 newColumnToExactValuesRepository.findByDepartmentId(departmentId);
         return new WholeDepartment<>(exactValues, newColumnsToExactValueList);
+    }
+    @Transactional
+    public void updateColumns(UpdateRequest updateRequest, Long departmentId, String currentUserId){
+        Long userId = Long.valueOf(currentUserId);
+        ExactColumnsDTO exactColumnsDTO =
+                updateRequest.getExactColumns();
+        if(columnNamesRepository.existsByColumnName(updateRequest.getColumnName())) {
+            ExactColumns exactColumns =
+                    exactColumnsRepository.getReferenceById(exactColumnsDTO.getId());
+            exactColumnsMapper.updateChangedColumn(exactColumnsDTO, exactColumns);
+            exactColumnsRepository.save(exactColumns);
+        }
+        else{
+            NewColumn newColumn =
+                    newColumnRepository.findByNameAndDepartment_Id(updateRequest.getColumnName(), departmentId);
+            newColumn.setValue(updateRequest.getNewValue());
+            newColumnRepository.save(newColumn);
+        }
+        Department department =
+                departmentRepository.findByDepartmentId(departmentId);
+        Userr userr =
+                userRepository.findById(userId).
+                        orElseThrow(() -> new BadRequestException("User not found!"));
+        HistoryOfChanges historyOfChanges =
+                HistoryOfChanges.builder()
+                        .oldValue(updateRequest.getOldValue())
+                        .newValue(updateRequest.getNewValue())
+                        .columnName(updateRequest.getColumnName())
+                        .department(department)
+                        .userWhoUpdated(userr)
+                        .build();
+        historyOfChangesRepository.save(historyOfChanges);
     }
 
     }
