@@ -10,6 +10,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import org.springframework.data.mongodb.core.index.Indexed;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -25,6 +27,7 @@ public abstract class DateAndTimeAudit implements Serializable {
 
     @CreatedDate
     @JsonIgnore
+    @Indexed
     private LocalDate createdDate;
 
     @CreationTimestamp

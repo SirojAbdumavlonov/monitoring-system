@@ -5,8 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
+@Document
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,7 +17,7 @@ public class TemporaryUserDetails {
     @GeneratedValue( // serial DB
             strategy = GenerationType.IDENTITY
     )
-    private Long id;
+    private String id;
     private String fullName;
     private RoleName roleName;
     private String password;

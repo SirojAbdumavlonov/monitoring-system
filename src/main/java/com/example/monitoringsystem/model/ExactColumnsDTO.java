@@ -1,10 +1,10 @@
-package com.example.monitoringsystem.entity;
+package com.example.monitoringsystem.model;
 
 import lombok.Data;
 
 @Data
 public class ExactColumnsDTO {
-    private Long id;
+    private String id;
     private int bankomats;
     private int computers;
     private int keyboard;

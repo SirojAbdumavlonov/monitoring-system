@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 public class AllColumns {
 
-    private Long departmentId;
+    private String departmentId;
 
     private int bankomats;
     private int computers;

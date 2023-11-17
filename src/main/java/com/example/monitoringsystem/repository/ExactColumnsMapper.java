@@ -1,7 +1,7 @@
 package com.example.monitoringsystem.repository;
 
 import com.example.monitoringsystem.entity.ExactColumns;
-import com.example.monitoringsystem.entity.ExactColumnsDTO;
+import com.example.monitoringsystem.model.ExactColumnsDTO;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;

@@ -5,10 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Entity
+@Document
 @Data
 @Builder
 @AllArgsConstructor
@@ -17,11 +18,13 @@ public class NewColumn {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @jakarta.persistence.Column(name = "column_id")
-    private Long columnId;
+    private String columnId;
+
     private String name;
 
-    private int value;
+    @ElementCollection
+    @CollectionTable(name = "element_values",joinColumns = @JoinColumn(name = "new_column_id"))
+    private List<ValueWithDate> values;
 
     @ManyToOne
     @JoinColumn(

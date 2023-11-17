@@ -1,4 +1,4 @@
-package com.example.monitoringsystem.entity;
+package com.example.monitoringsystem.model;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,10 +17,10 @@ public class ReasonOfDeclining {
     @GeneratedValue(
             strategy = GenerationType.IDENTITY
     )
-    private Long id;
+    private String id;
 
     private String message;
 
-    private Long declinedUserId;
+    private String declinedUserId;
 
 }

@@ -42,7 +42,7 @@ public class ScheduledTasks {
             for(int i = 0; i < columnsToExactValues.size(); i++) {
                 totalEfficiency +=
                         getCalculatedEfficiency(columnsToExactValues.get(i).getValue(),
-                                newColumnList.get(i).getValue());
+                                newColumnList.get(i).getValues().getLast().getValue());
             }
         }
 
@@ -69,9 +69,10 @@ public class ScheduledTasks {
 
             for(int i = 0; i < columnsToExactValues.size(); i++){
                 newColumnEfficiencies.add(
-                        newColumnEfficiencyRepository.save(NewColumnEfficiency.builder()
+                        newColumnEfficiencyRepository.save(
+                                NewColumnEfficiency.builder()
                                 .efficiency(efficiency)
-                                .value(getCalculatedEfficiency(columnsToExactValues.get(i).getValue(),newColumnList.get(i).getValue()))
+                                .value(getCalculatedEfficiency(columnsToExactValues.get(i).getValue(),newColumnList.get(i).getValues().getLast().getValue()))
                                 .name(columnsToExactValues.get(i).getName())
                                 .efficiency(efficiency)
                                 .build()

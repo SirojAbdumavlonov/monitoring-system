@@ -6,8 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
+@Document
 @Data
 @Builder
 @AllArgsConstructor
@@ -15,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class HistoryOfChanges extends DateAndTimeAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     private int oldValue;
     private int newValue;

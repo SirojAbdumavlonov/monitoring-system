@@ -6,10 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Entity
+@Document
 @Builder
 @Data
 @AllArgsConstructor
@@ -20,7 +21,7 @@ public class Efficiency extends DateAudit {
     @GeneratedValue(
             strategy = GenerationType.IDENTITY
     )
-    private Long id;
+    private String id;
 
     private Double bankomats;
     private Double computers;

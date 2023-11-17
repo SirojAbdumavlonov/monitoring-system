@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Requests {
     private String fullName;
-    private Long id;
+    private String id;
     private String department;
 
 

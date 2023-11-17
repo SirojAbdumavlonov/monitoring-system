@@ -5,8 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
+@Document
 @Builder
 @Data
 @AllArgsConstructor
@@ -14,10 +15,7 @@ import lombok.NoArgsConstructor;
 public class Department {
     private String departmentName;
     @Id
-    @GeneratedValue(
-            strategy = GenerationType.IDENTITY
-    )
-    private Long id;
+    private String id;
     private String address;
 
     @OneToOne
@@ -26,6 +24,8 @@ public class Department {
     )
     private Location location;
 
+
+    private String idOfMainBranch;
 
 
 }

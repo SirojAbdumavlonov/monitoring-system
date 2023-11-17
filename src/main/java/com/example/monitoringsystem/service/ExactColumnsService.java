@@ -24,22 +24,22 @@ public class ExactColumnsService {
     private final NewColumnRepository newColumnRepository;
 
 
-    public List<ExactColumns> getPreviousDaysData(Long userId) {
+    public List<ExactColumns> getPreviousDaysData(String userId) {
         //1. Find department id where he/she works - done
         //2. Use department id to find table(exactColumns) in which data is saved
         //3. Write a query to find this data(use IN keyword in sql)
         //4. Add it for method in service and ,eventually, to controller
 
-        Long departmentId = departmentService.findDepartmentOfUser(userId).getId();
+        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
 
         return exactColumnsRepository.findByDepartmentId_Id(departmentId);
     }
-    public ColumnNames getNamesOfColumns(Long userId){
+    public ColumnNames getNamesOfColumns(String userId){
 
-        Long departmentId = departmentService.findDepartmentOfUser(userId).getId();
+        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
 
         List<String> namesOfColumnOfDefaultTable =
-                columnNamesRepository.findAllColumns();
+                columnNamesRepository.findAllColumnNames();
 
         List<String> namesOfNewColumns =
                 newColumnRepository.findNamesOfColumns(departmentId);
@@ -48,9 +48,9 @@ public class ExactColumnsService {
 
         return new ColumnNames(namesOfColumnOfDefaultTable);
     }
-    public ExactColumns getTodayDailyFilledData(LocalDate today, Long userId){
+    public ExactColumns getTodayDailyFilledData(LocalDate today, String userId){
 
-        Long departmentId = departmentService.findDepartmentOfUser(userId).getId();
+        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
 
         return exactColumnsRepository.findByCreatedDateAndDepartmentId(today, departmentId);
     }

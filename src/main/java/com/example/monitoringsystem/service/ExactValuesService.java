@@ -1,11 +1,9 @@
 package com.example.monitoringsystem.service;
 
+import com.example.monitoringsystem.constants.RequestType;
 import com.example.monitoringsystem.entity.*;
 import com.example.monitoringsystem.exception.BadRequestException;
-import com.example.monitoringsystem.model.AllColumns;
-import com.example.monitoringsystem.model.NewColumnModel;
-import com.example.monitoringsystem.model.UpdateRequest;
-import com.example.monitoringsystem.model.WholeDepartment;
+import com.example.monitoringsystem.model.*;
 import com.example.monitoringsystem.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +25,13 @@ public class ExactValuesService {
     private final ColumnNamesRepository columnNamesRepository;
     private final UserRepository userRepository;
     private final HistoryOfChangesRepository historyOfChangesRepository;
+    private final RequestForChangingValueRepository changingValueRepository;
 
+    @Transactional
     public void saveData(AllColumns allColumns) {
 
         Department department =
-                departmentRepository.getReferenceById(allColumns.getDepartmentId());
+                departmentRepository.findById(allColumns.getDepartmentId()).orElseThrow(() -> new BadRequestException("Not found!"));
 
         List<NewColumnsToExactValue> newColumns = new ArrayList<>();
         if(allColumns.getNewColumns() != null){
@@ -58,22 +58,25 @@ public class ExactValuesService {
         exactValuesRepository.save(exactValues);
     }
 
+    @Transactional
     public void saveDailyData(AllColumns allColumns) {
 
         Department department =
-                departmentRepository.getReferenceById(allColumns.getDepartmentId());
+                departmentRepository.findById(allColumns.getDepartmentId())
+                        .orElseThrow(() -> new BadRequestException("Not found!"));
+        LocalDate today = LocalDate.now();
 
         for (NewColumnModel model : allColumns.getNewColumns()) {
             //Firstly, I check if I have a column with this name
-            if(newColumnRepository.findByName(model.getColumnName()).isPresent()){
+            if(newColumnRepository.findByNameAndDepartmentId(model.getColumnName(),department.getId()).isPresent()){
                 //Then, I find out and initiate it to its class
-                NewColumn newColumn = newColumnRepository.findByName
-                        (model.getColumnName()).orElseThrow(()
+                NewColumn newColumn = newColumnRepository.findByNameAndDepartmentId
+                        (model.getColumnName(),department.getId()).orElseThrow(()
                         -> new BadRequestException("Error in getting column"));
                 //Get all values of column which name is in given class
-                List<String> values = newColumn.getValues();
+                List<ValueWithDate> values = newColumn.getValues();
                 //Add to table new value to new/old column
-                values.add(model.getValue());
+                values.add(new ValueWithDate(model.getValue(), today));
                 //Change values of column to old list + new value
                 newColumn.setValues(values);
                 //Save column with new value
@@ -81,7 +84,7 @@ public class ExactValuesService {
             }
             else {
                 NewColumn newColumn = NewColumn.builder()
-                        .values(List.of(model.getValue()))
+                        .values(List.of(new ValueWithDate(model.getValue(), today)))
                         .name(model.getColumnName())
                         .department(department)
                         .build();
@@ -110,7 +113,7 @@ public class ExactValuesService {
 
         return new WholeDepartment<>(exactColumns, newColumn);
     }
-    public WholeDepartment<ExactValues, List<NewColumnsToExactValue>> getFixedValues(Long departmentId) {
+    public WholeDepartment<ExactValues, List<NewColumnsToExactValue>> getFixedValues(String departmentId) {
         ExactValues exactValues =
                 exactValuesRepository.findByDepartmentId(departmentId);
         List<NewColumnsToExactValue> newColumnsToExactValueList =
@@ -118,26 +121,44 @@ public class ExactValuesService {
         return new WholeDepartment<>(exactValues, newColumnsToExactValueList);
     }
     @Transactional
-    public void updateColumns(UpdateRequest updateRequest, Long departmentId, String currentUserId){
-        Long userId = Long.valueOf(currentUserId);
+    public void updateColumns(UpdateRequest updateRequest, String departmentId, String currentUserId){
+
+
+        LocalDate today = LocalDate.now();
         ExactColumnsDTO exactColumnsDTO =
-                updateRequest.getExactColumns();
-        if(columnNamesRepository.existsByColumnName(updateRequest.getColumnName())) {
+                updateRequest.getExactColumns();//get all changed columns
+
+        if(columnNamesRepository.existsByColumnName(updateRequest.getColumnName())) {//check if column was updated from main table
             ExactColumns exactColumns =
-                    exactColumnsRepository.getReferenceById(exactColumnsDTO.getId());
+                    exactColumnsRepository.findById(exactColumnsDTO.getId()).orElseThrow(() -> new BadRequestException("Not found!"));
+            //if it is in main table, change the value
             exactColumnsMapper.updateChangedColumn(exactColumnsDTO, exactColumns);
+            //change the value
             exactColumnsRepository.save(exactColumns);
+            //save it
         }
         else{
             NewColumn newColumn =
-                    newColumnRepository.findByNameAndDepartment_Id(updateRequest.getColumnName(), departmentId);
-            newColumn.setValue(updateRequest.getNewValue());
+                    newColumnRepository.findByNameAndDepartment_Id
+                            (updateRequest.getColumnName(), departmentId);
+            //In this line of code, I know that it is newly added column, I want to find it in table of new columns
+            //And update its value
+            Integer newValue = updateRequest.getNewValue();
+            Integer oldValue = updateRequest.getOldValue();
+            for(ValueWithDate value: newColumn.getValues()){
+                if (value.getValue().equals(oldValue) &&
+                        value.getLocalDate().isEqual(today)){
+                    value.setValue(newValue);
+                }
+            }
+
             newColumnRepository.save(newColumn);
         }
         Department department =
-                departmentRepository.findByDepartmentId(departmentId);
+                departmentRepository.findById(departmentId)
+                        .orElseThrow(() -> new BadRequestException("Not found!"));
         Userr userr =
-                userRepository.findById(userId).
+                userRepository.findById(currentUserId).
                         orElseThrow(() -> new BadRequestException("User not found!"));
         HistoryOfChanges historyOfChanges =
                 HistoryOfChanges.builder()
@@ -150,4 +171,17 @@ public class ExactValuesService {
         historyOfChangesRepository.save(historyOfChanges);
     }
 
+    public void requestForChangingFixedValue(RequestForFixedValueModel model, String userId) {
+        RequestForFixedValue requestForFixedValue =
+                RequestForFixedValue.builder()
+                        .oldValue(model.getOldValue())
+                        .newValue(model.getNewValue())
+                        .message(model.getMessage())
+                        .requestType(RequestType.FIXED_VALUE)
+                        .adminId(userId)
+                        .columnName(model.getColumnName())
+                        .build();
+        changingValueRepository.save(requestForFixedValue);
+
     }
+}

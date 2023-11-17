@@ -5,19 +5,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
 
-@Entity
+
+@Document
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ExactValues {
+public class ExactValues {//Fixed values
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    private String id;
 
     private int bankomats;
     private int computers;

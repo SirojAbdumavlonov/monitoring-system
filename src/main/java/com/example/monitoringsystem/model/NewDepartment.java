@@ -5,10 +5,12 @@ import lombok.NonNull;
 
 @Data
 public class NewDepartment {
-    @NonNull
+    private String id;
+
     private String departmentName;
-    @NonNull
+
     private String address;
     private double lon;
     private double lat;
+    private String idOfMainBranch;
 }

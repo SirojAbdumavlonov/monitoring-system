@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class NewColumnModel {
-    private String value;
+    private int value;
     private String columnName;
 
 }

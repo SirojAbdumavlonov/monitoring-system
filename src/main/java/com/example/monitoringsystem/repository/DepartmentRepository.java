@@ -1,7 +1,7 @@
 package com.example.monitoringsystem.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 import com.example.monitoringsystem.entity.Department;
 
@@ -9,29 +9,21 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface DepartmentRepository extends JpaRepository<Department, Long> {
+public interface DepartmentRepository extends MongoRepository<Department, String> {
 
-    @Query(
-            "SELECT d FROM Department d"
-    )
-    List<Department> findAllDepartments();
 
-    @Override
+
     List<Department> findAll();
 
     List<Department> findByAddress(String address);
 
-    @Query(
-            "SELECT d FROM Department d WHERE d.address = ?2 AND d.id = ?1"
-    )
-    List<Department> findDepartmentsByAddress(Long id, String address2);
+//    @Query("{'id': ?0, 'address': ?1}")
+//    List<Department> findDepartmentsByAddress(String id, String address2);
 
     Optional<Department> findByDepartmentName(String departmentName);
 
-    @Query(
-            "select d  from Department d where d.id=?1 "
-    )
-    Department findByDepartmentId(Long departmentId);
+    List<Department> findByIdOfMainBranch(String departmentId);
 
+    boolean existsByIdOfMainBranch(String departmentId);
 
 }
