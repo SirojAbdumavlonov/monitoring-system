@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Document
 @Builder
 @AllArgsConstructor
@@ -29,13 +32,11 @@ public class ExactColumns extends DateAndTimeAudit {
     private int mouse;
     private int monitor;
     private int employees;
+    LocalDate date;
 
+    private String departmentId;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "department_id"
-    )
-    private Department department;
+    private List<NewColumn> newColumns;
 //    @ElementCollection
 //    private List<Long> newColumnsId;
 }

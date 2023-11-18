@@ -2,9 +2,10 @@ package com.example.monitoringsystem.controller;
 
 import com.example.monitoringsystem.model.SignInRequest;
 import com.example.monitoringsystem.model.SignUpRequest;
-import com.example.monitoringsystem.service.RequestsService;
 import com.example.monitoringsystem.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,14 +14,18 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthenticationController {
     private final UserService userService;
-    private final RequestsService requestsService;
+
+    private final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
+
 
     //    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @PostMapping("/sign-up")
     public ResponseEntity<?> signUp(@RequestBody SignUpRequest signUpRequest) {
         userService.saveUser(signUpRequest);
 
-        return null;
+        logger.info("No mistake while registering!");
+
+        return ResponseEntity.ok("Registered successfully!");
     }
 
     @PostMapping("/sign-in")
@@ -28,8 +33,9 @@ public class AuthenticationController {
 
         userService.signIn(signInRequest);
 
-        return ResponseEntity.ok("Data found!");
+        logger.info("No mistake while signing in!");
 
+        return ResponseEntity.ok("Data found!");
     }
 
 //    @GetMapping("/requests")

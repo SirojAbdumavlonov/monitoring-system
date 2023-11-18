@@ -7,25 +7,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document
+import java.time.LocalDate;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class NewColumnsToExactValue {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
 
     private String name;
 
     private int value;
-
-    @ManyToOne
-    @JoinColumn(
-            name = "department_id"
-    )
-    private Department department;
-
-
 }

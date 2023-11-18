@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
+import java.util.List;
 
 
 @Document
@@ -14,9 +16,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ExactValues {//Fixed values
+public class ExactValues {
+    //Fixed values
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     private int bankomats;
@@ -26,10 +29,9 @@ public class ExactValues {//Fixed values
     private int mouse;
     private int monitor;
     private int employees;
+    private LocalDate localDate;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "department_id"
-    )
-    private Department department;
+    private String departmentId;
+
+    private List<NewColumnsToExactValue> newColumnsToExactValueList;
 }

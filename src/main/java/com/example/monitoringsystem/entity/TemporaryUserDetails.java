@@ -28,9 +28,5 @@ public class TemporaryUserDetails {
     )
     private Department department;
 
-    @OneToOne
-    @JoinColumn(
-            name = "request_id"
-    )
-    private RequestOfUser requestOfUser;
+
 }

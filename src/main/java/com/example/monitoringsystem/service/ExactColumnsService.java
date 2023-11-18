@@ -1,27 +1,25 @@
 package com.example.monitoringsystem.service;
 
 import com.example.monitoringsystem.entity.ExactColumns;
+import com.example.monitoringsystem.entity.NewColumn;
 import com.example.monitoringsystem.exception.BadRequestException;
 import com.example.monitoringsystem.payload.ColumnNames;
 import com.example.monitoringsystem.repository.ColumnNamesRepository;
 import com.example.monitoringsystem.repository.ExactColumnsRepository;
-import com.example.monitoringsystem.repository.NewColumnRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 
 @Service
 @RequiredArgsConstructor
 public class ExactColumnsService {
-    private final ExactValuesService exactValuesService;
     private final ExactColumnsRepository exactColumnsRepository;
     private final DepartmentService departmentService;
     private final ColumnNamesRepository columnNamesRepository;
-    private final NewColumnRepository newColumnRepository;
 
 
     public List<ExactColumns> getPreviousDaysData(String userId) {
@@ -32,7 +30,7 @@ public class ExactColumnsService {
 
         String departmentId = departmentService.findDepartmentOfUser(userId).getId();
 
-        return exactColumnsRepository.findByDepartmentId_Id(departmentId);
+        return exactColumnsRepository.findAllByDepartmentId(departmentId);
     }
     public ColumnNames getNamesOfColumns(String userId){
 
@@ -41,18 +39,26 @@ public class ExactColumnsService {
         List<String> namesOfColumnOfDefaultTable =
                 columnNamesRepository.findAllColumnNames();
 
-        List<String> namesOfNewColumns =
-                newColumnRepository.findNamesOfColumns(departmentId);
-
-        namesOfColumnOfDefaultTable.addAll(namesOfNewColumns);
-
+        ExactColumns exactColumns =
+                exactColumnsRepository.findByDepartmentId(departmentId)
+                        .orElseThrow(() -> new BadRequestException("Columns not found!"));
+        if(!exactColumns.getNewColumns().isEmpty()) {
+            List<String> namesOfNewColumns = new ArrayList<>();
+            for (NewColumn newColumn : exactColumns.getNewColumns()) {
+                namesOfNewColumns.add(
+                        newColumn.getName()
+                );
+            }
+            namesOfColumnOfDefaultTable.addAll(namesOfNewColumns);
+        }
         return new ColumnNames(namesOfColumnOfDefaultTable);
     }
     public ExactColumns getTodayDailyFilledData(LocalDate today, String userId){
 
         String departmentId = departmentService.findDepartmentOfUser(userId).getId();
 
-        return exactColumnsRepository.findByCreatedDateAndDepartmentId(today, departmentId);
+        return exactColumnsRepository.findByCreatedDateAndDepartmentId(today, departmentId)
+                .orElseThrow(() -> new BadRequestException("Not found table with data!"));
     }
 
 }

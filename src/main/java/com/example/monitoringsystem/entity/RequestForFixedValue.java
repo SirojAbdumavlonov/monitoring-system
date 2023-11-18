@@ -1,7 +1,6 @@
 package com.example.monitoringsystem.entity;
 
 import com.example.monitoringsystem.entity.audit.DateTimeAudit;
-import com.example.monitoringsystem.model.Message;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,10 +17,11 @@ public class RequestForFixedValue extends DateTimeAudit {
     private String id;
     private String adminId;//Who requested
     private String columnName;
-    int oldValue;
-    int newValue;
+    private Object oldValue;
+    private Object newValue;
     private String requestType;
-
     private String message;
+    private String reason;
+    private String status;
 
 }

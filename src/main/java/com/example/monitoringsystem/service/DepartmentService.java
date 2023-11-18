@@ -1,7 +1,9 @@
 package com.example.monitoringsystem.service;
 
+import com.example.monitoringsystem.constants.RequestStatus;
 import com.example.monitoringsystem.entity.Department;
 import com.example.monitoringsystem.entity.Location;
+import com.example.monitoringsystem.entity.RequestForFixedValue;
 import com.example.monitoringsystem.entity.Userr;
 import com.example.monitoringsystem.exception.BadRequestException;
 import com.example.monitoringsystem.model.NewDepartment;
@@ -16,8 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DepartmentService {
     private final DepartmentRepository departmentRepository;
-    private final LocationRepository locationRepository;
     private final UserRepository userRepository;
+    private final RequestForChangingValueRepository forChangingValueRepository;
 
 
     public void saveNewDepartment(NewDepartment newDepartment) {
@@ -34,14 +36,19 @@ public class DepartmentService {
                 .id(newDepartment.getId())
                 .build();
 
-        locationRepository.save(location);
+
         departmentRepository.save(department);
+    }
+    private Department getDepartmentById(String departmentId){
+        return departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new BadRequestException("Department not found"));
     }
 
     public Department findDepartmentOfUser(String userId) {
         Userr found = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Not found!"));
-        return found.getDepartment();
+
+        return getDepartmentById(found.getDepartmentId());
     }
 
     public List<Department> findAllDepartments() {
@@ -50,8 +57,13 @@ public class DepartmentService {
     public List<Department> findDepartmentWithItsSubBranches(String userId){
         Userr found = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Not found!"));
-        String departmentId = found.getDepartment().getId();
-        List<Department> getAllDepartments = new java.util.ArrayList<>(List.of(found.getDepartment()));
+
+        String departmentId = found.getDepartmentId();
+
+        Department department = getDepartmentById(departmentId);
+
+
+        List<Department> getAllDepartments = new java.util.ArrayList<>(List.of(department));
 
         getAllDepartments.addAll(departmentRepository.findByIdOfMainBranch(departmentId));
 
@@ -62,18 +74,39 @@ public class DepartmentService {
                 orElseThrow(() -> new BadRequestException("THere is no department with this id"));
     }
     public Department findDepartmentByIdForAdmin(String departmentID, String adminId){
+
         Userr found = userRepository.findById(adminId)
                 .orElseThrow(() -> new RuntimeException("Not found!"));
-        String departmentId = found.getDepartment().getId();
+
+        String departmentId = found.getDepartmentId();
 
         if(departmentRepository.existsByIdOfMainBranch(departmentId)){
             //firstly, it checks if his branch is the main
-            return departmentRepository.findById(departmentID).
-                    orElseThrow(() -> new BadRequestException("THere is no department with this id"));
+            return getDepartmentById(departmentID);
         }
-        throw  new BadRequestException("You don't have an access to see this department's data!");
+        throw new BadRequestException("You don't have an access to see this department's data!");
     }
 
 
+    public void acceptRequest(String requestId) {
+        RequestForFixedValue requestForFixedValue =
+                forChangingValueRepository.findById(requestId)
+                        .orElseThrow(() -> new BadRequestException("Request not found!"));
+        requestForFixedValue.setStatus(RequestStatus.ACCEPTED);
 
+        forChangingValueRepository.save(requestForFixedValue);
+
+    }
+
+    public void declineRequest(String requestId, String reason) {
+        RequestForFixedValue requestForFixedValue =
+                forChangingValueRepository.findById(requestId)
+                        .orElseThrow(() -> new BadRequestException("Request not found!"));
+        requestForFixedValue.setStatus(RequestStatus.DECLINED);
+        requestForFixedValue.setReason(reason);
+
+        forChangingValueRepository.save(requestForFixedValue);
+
+
+    }
 }

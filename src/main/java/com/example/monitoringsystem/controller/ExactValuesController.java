@@ -2,7 +2,6 @@ package com.example.monitoringsystem.controller;
 
 import com.example.monitoringsystem.constants.Tab;
 import com.example.monitoringsystem.entity.ExactColumns;
-import com.example.monitoringsystem.entity.RequestForFixedValue;
 import com.example.monitoringsystem.exception.BadRequestException;
 import com.example.monitoringsystem.model.AllColumns;
 import com.example.monitoringsystem.model.RequestForFixedValueModel;
@@ -29,7 +28,7 @@ import java.util.List;
 public class ExactValuesController {
 
     private final ExactValuesService exactValuesService;
-//    private final DepartmentService departmentService;
+
     private final ExactColumnsService exactColumnsService;
     private final Logger logger = LoggerFactory.getLogger(ExactValuesController.class);
 
@@ -37,7 +36,11 @@ public class ExactValuesController {
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','USER')")
     @PostMapping("/save/fixed-data")
     public ResponseEntity<?> saveSettingsData(@RequestBody AllColumns allColumns) {
+
         exactValuesService.saveData(allColumns);
+
+        logger.info("No mistake in saving fixed data!");
+
         return ResponseEntity.ok("Saved successfully!");
     }
 
@@ -45,7 +48,11 @@ public class ExactValuesController {
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','USER')")
     @PostMapping("/save/daily-data")
     public ResponseEntity<?> saveDailyData(@RequestBody AllColumns allColumns) {
+
         exactValuesService.saveDailyData(allColumns);
+
+        logger.info("No mistake in saving daily data!");
+
         return ResponseEntity.ok("Saved successfully!");
     }
     @GetMapping("/daily-changes")
@@ -55,27 +62,31 @@ public class ExactValuesController {
 
         ColumnNames columnNames =
                 exactColumnsService.getNamesOfColumns(userId);
+
         if(tab.equals(Tab.ALL)){
             List<ExactColumns> columnsList =
                     exactColumnsService.getPreviousDaysData(userId);
             return ResponseEntity.ok(new DailyDataReturn
-                    <ColumnNames, List<ExactColumns>>(columnNames, columnsList));
+                    <>(columnNames, columnsList));
         }
         else if(tab.equals(Tab.TODAY)){
             ExactColumns columns =
                     exactColumnsService.getTodayDailyFilledData(today, userId);
 
-            return ResponseEntity.ok(new DailyDataReturn<ColumnNames, ExactColumns>(columnNames, columns));
+            return ResponseEntity.ok(new DailyDataReturn<>(columnNames, columns));
         }
         logger.info("Error in GET request with param: {}", tab);
         throw new BadRequestException("Error");
     }
+
     @PreAuthorize("hasAnyRole('USER','SUPER_ADMIN')")
     @PutMapping("/daily-changes/update/{departmentId}")
     public ResponseEntity<?> updateFieldInDb(@PathVariable String departmentId,
                                              @CurrentUserId String currentUserId,
                                              @RequestBody UpdateRequest updateRequest){
         exactValuesService.updateColumns(updateRequest, departmentId, currentUserId);
+
+        logger.info("Data is successfully updated!");
 
         return ResponseEntity.ok("Changed successfully!");
     }
@@ -86,6 +97,8 @@ public class ExactValuesController {
             @RequestBody RequestForFixedValueModel requestForFixedValue){
 
         exactValuesService.requestForChangingFixedValue(requestForFixedValue, userId);
+
+        logger.info("Request sent!");
 
         return ResponseEntity.ok("Request sent successfully!");
     }

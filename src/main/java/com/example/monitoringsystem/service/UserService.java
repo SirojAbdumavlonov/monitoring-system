@@ -17,25 +17,22 @@ public class UserService {
     private final TemporaryUserDetailsRepository userDetailsRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final ReasonOfDecliningRepository decliningRepository;
 
     public void saveUser(SignUpRequest signUpRequest) {
 
         Department department =
                 departmentRepository.findByDepartmentName(
-                        signUpRequest.getBranch()).orElseThrow(() -> new RuntimeException("No such branch"));
+                        signUpRequest.getDepartmentName()).orElseThrow(() -> new RuntimeException("No such branch"));
 
-
-        TemporaryUserDetails userDetails = TemporaryUserDetails.builder()
+        Userr user = Userr.builder()
+                .id(signUpRequest.getId())//id of user given by super admin
+                .departmentId(department.getId())
                 .fullName(signUpRequest.getFullName())
-                .password(passwordEncoder.encode(signUpRequest.getPassword()))
+                .password(signUpRequest.getPassword())
                 .roleName(RoleName.USER)
-                .department(department)
                 .build();
 
-
-        userDetailsRepository.save(userDetails);
-
+        userRepository.save(user);
     }
     public void signIn(SignInRequest signInRequest){
         Userr userr =

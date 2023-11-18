@@ -6,8 +6,8 @@ import lombok.Data;
 public class RequestForFixedValueModel {
     private String adminId;//Who requested
     private String columnName;
-    Object oldValue;
-    Object newValue;
+    private Object oldValue;
+    private Object newValue;
     private String requestType;
     private String message;
 }

@@ -21,20 +21,12 @@ import java.util.List;
 @Data
 public class Userr extends DateAndTimeAudit implements UserDetails{
     @Id
-    @GeneratedValue( // serial DB
-            strategy = GenerationType.IDENTITY
-    )
     private String id;
     private String fullName;
     private RoleName roleName;
     private String password;
 
-
-    @ManyToOne
-    @JoinColumn(
-            name = "department_id"
-    )
-    private Department department;
+    private String departmentId;
 
 
     @Override

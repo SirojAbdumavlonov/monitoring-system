@@ -13,17 +13,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Department {
-    private String departmentName;
     @Id
     private String id;
+
     private String address;
 
-    @OneToOne
-    @JoinColumn(
-            name = "location_id"
-    )
-    private Location location;
+    private String departmentName;
 
+    private Location location;
 
     private String idOfMainBranch;
 

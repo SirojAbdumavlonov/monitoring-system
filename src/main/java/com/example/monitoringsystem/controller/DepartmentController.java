@@ -5,6 +5,7 @@ import com.example.monitoringsystem.model.RequestForFixedValueModel;
 import com.example.monitoringsystem.security.CurrentUserId;
 import com.example.monitoringsystem.service.DepartmentService;
 import com.example.monitoringsystem.service.ExactValuesService;
+import com.example.monitoringsystem.service.RequestsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import java.util.List;
 public class DepartmentController {
     private final DepartmentService departmentService;
     private final ExactValuesService exactValuesService;
+    private final RequestsService requestsService;
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @GetMapping("/")
@@ -83,5 +85,30 @@ public class DepartmentController {
         exactValuesService.requestForChangingFixedValue(requestForFixedValue, userId);
 
         return ResponseEntity.ok("Request sent successfully!");
+    }
+
+    @PutMapping("/request/{requestId}")
+    public ResponseEntity<?> acceptOrDeclineRequest(@PathVariable String requestId,
+                                                    @RequestParam(name = "opt") String option,
+                                                    @RequestBody String reason){
+        //Option is used for accepting or declining request
+        //Option can be only accept or decline
+        if(option.equals("accept")){
+            departmentService.acceptRequest(requestId);
+        }
+        else if(option.equals("decline")){
+            departmentService.declineRequest(requestId, reason);
+        }
+        return null;
+    }
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @GetMapping("/request")
+    public ResponseEntity<?> getAllRequests(@RequestParam(name = "opt", defaultValue = "waiting") String opt){
+        //show requests which are in waiting status
+        if(opt.equals("all")){
+            return ResponseEntity.ok(requestsService.getAllValues());
+        }
+
+        return ResponseEntity.ok(requestsService.getValues(opt.toLowerCase()));
     }
 }

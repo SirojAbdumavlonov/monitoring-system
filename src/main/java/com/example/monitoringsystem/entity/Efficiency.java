@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
+
 @Document
 @Builder
 @Data
@@ -19,7 +20,7 @@ public class Efficiency extends DateAudit {
 
     @Id
     @GeneratedValue(
-            strategy = GenerationType.IDENTITY
+            strategy = GenerationType.UUID
     )
     private String id;
 
@@ -31,11 +32,9 @@ public class Efficiency extends DateAudit {
     private Double monitor;
     private Double employees;
     private Double totalEfficiency;
-    @ManyToOne
-    @JoinColumn(
-            name = "department_id"
-    )
-    private Department department;
 
+    private String departmentId;
+
+    private List<NewColumnEfficiency> efficiencyList;
 
 }

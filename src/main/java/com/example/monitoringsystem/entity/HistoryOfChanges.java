@@ -15,22 +15,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 public class HistoryOfChanges extends DateAndTimeAudit {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     private int oldValue;
     private int newValue;
     private String columnName;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "user"
-    )
-    private Userr userWhoUpdated;
+    private String userId;//user who updated value
 
-    @ManyToOne
-    @JoinColumn(
-            name = "deparment_id"
-    )
-    private Department department;
+    private String departmentId;
 }

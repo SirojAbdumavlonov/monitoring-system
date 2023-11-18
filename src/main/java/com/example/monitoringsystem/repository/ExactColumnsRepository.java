@@ -19,9 +19,10 @@ public interface ExactColumnsRepository extends MongoRepository<ExactColumns,Str
 //    )
 //    Optional<ExactColumns> findByDepartmentId(Long departmentId);
 
-    List<ExactColumns> findByDepartmentId_Id(String departmentId);
+    List<ExactColumns> findAllByDepartmentId(String departmentId);
+    Optional<ExactColumns> findByDepartmentId(String departmentId);
 
-    ExactColumns findByCreatedDateAndDepartmentId(LocalDate date, String departmentId);
+    Optional<ExactColumns> findByCreatedDateAndDepartmentId(LocalDate date, String departmentId);
 
     ExactColumns findByCreatedDate(LocalDate date);
 
