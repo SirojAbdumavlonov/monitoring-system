@@ -1,8 +1,7 @@
 package com.example.monitoringsystem.service;
 
-import com.example.monitoringsystem.constants.Tab;
-import com.example.monitoringsystem.entity.ExactColumns;
-import com.example.monitoringsystem.entity.NewColumn;
+
+import com.example.monitoringsystem.entity.*;
 import com.example.monitoringsystem.exception.BadRequestException;
 import com.example.monitoringsystem.payload.ColumnNames;
 import com.example.monitoringsystem.repository.ColumnNamesRepository;
@@ -10,12 +9,13 @@ import com.example.monitoringsystem.repository.DepartmentRepository;
 import com.example.monitoringsystem.repository.ExactColumnsRepository;
 import com.example.monitoringsystem.tool.DateUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import com.example.monitoringsystem.constants.TimeRange;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -28,20 +28,26 @@ public class ExactColumnsService {
     private final DepartmentRepository departmentRepository;
 
 
-    public Object getPreviousDaysData(String userId, String date, String view,
-                                      LocalDate from, LocalDate to, String timeRange, String monthName) {
-        LocalDate localDate = null;
+    public Object getPreviousDaysData(String userId, LocalDate date, String chosenDepartment,
+                                      LocalDate from, LocalDate to, String timeRange,
+                                      String monthName, int lastNDays, Collection<? extends GrantedAuthority> role,
+                                      String option) {
 
-        if(!date.equals(Tab.ALL_DATES)){
-            localDate = LocalDate.parse(date);
-        }
+        //Given date or search through or in
+        // diaposon of date should be assigned
+        // to variable time range
 
         switch (timeRange.toLowerCase()) {
-            case TimeRange.TIME_RANGE:
-
+            case TimeRange.GIVEN_DATE:
+                from = date;
+                to = date;
                 break;
-            case TimeRange.MONTH:
-                 // You can change this value as needed
+            case TimeRange.LAST_N_DAYS:
+                from = DateUtil.getStartOfLastNDays(lastNDays);
+                to = LocalDate.now();
+                break;
+            case TimeRange.MONTH://if month is given then,
+                // monthName should be given and time range should be month
                 int monthNUmber = DateUtil.getMonthNumber(monthName);
                 from = DateUtil.getStartOfMonth(LocalDate.now().getYear(), monthNUmber);
                 to = DateUtil.getEndOfMonth(LocalDate.now().getYear(), monthNUmber);
@@ -66,6 +72,10 @@ public class ExactColumnsService {
                 from = DateUtil.getStartOfLastYear();
                 to = DateUtil.getEndOfLastYear();
                 break;
+            case TimeRange.ALL_TIME:
+                from = LocalDate.of(2023, 11, 20);
+                to = LocalDate.now();
+                break;
             default:
                 from = DateUtil.getStartOfCurrentWeek();
                 to = DateUtil.getEndOfCurrentWeek();
@@ -74,39 +84,65 @@ public class ExactColumnsService {
         }
 
 
-        //view is departmentId
-
         //1. Find department id where he/she works - done
         //2. Use department id to find table(exactColumns) in which data is saved
         //3. Write a query to find this data(use IN keyword in sql)
         //4. Add it for method in service and ,eventually, to controller
         String departmentId = departmentService.findDepartmentOfUser(userId).getId();
-        
-        List<String> subBranchesIds = departmentRepository.findAllByIdOfMainBranch(departmentId);
-        subBranchesIds.add(departmentId);
 
-        if(departmentRepository.existsById(departmentId) || departmentRepository.existsByIdOfMainBranch(view)) {
+        if (role.stream().anyMatch(a -> a.getAuthority().equals("USER"))) {
 
-            if (date.equals(Tab.ALL_DATES)) {
-                //find all dates
-                if(view == null){//of all departments of user
-                    return exactColumnsRepository.findAllByDepartmentIdIn(subBranchesIds);
+            if (departmentRepository.existsById(departmentId) || departmentRepository.existsByIdOfMainBranchAndId(departmentId, chosenDepartment)) {
+
+                if (chosenDepartment == null) { //of all departments of user
+
+                    List<String> subBranchesIds =
+                            departmentRepository.findAllByIdOfMainBranch(departmentId);
+
+                    subBranchesIds.add(departmentId);
+
+                    return exactColumnsRepository.findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId
+                            (subBranchesIds, from, to);
                     //sub-branches = branches belong to one of main branches
                 }
-                else{
-                    return exactColumnsRepository.findAllByDepartmentIdAndCreatedDateBetween
-                            (view, from, to);
-                    //view is given department id, which I want to find
-                }
             }
-
-            else if(!date.equals(Tab.ALL_DATES) && !view.isEmpty()){
-                return exactColumnsRepository.findByCreatedDateAndDepartmentId(localDate, view);
-            }
-
-            return exactColumnsRepository.findAllByDepartmentId(departmentId);
         }
+        else{ //This is for super admin
+            if(chosenDepartment == null){//if department is     not chosen, show all depts
+                return exactColumnsRepository
+                        .findAllByCreatedDateBetweenOrderByCreatedDateDescDepartmentId(from, to);
+            }
+
+        }
+        //this part for getting history of changes of chosen department
+
+        if((ifThisDepartmentCanBeSeenByThisUser(chosenDepartment, userId) &&
+                role.stream().anyMatch(a -> a.getAuthority().equals("USER")))
+                            ||
+                role.stream().anyMatch(a -> a.getAuthority().equals("SUPER_ADMIN")
+            )){
+            //It will work if super admin is trying to access it, or
+            //If this branch can be accessed by the admin of header branch
+
+            List<ExactColumns> exactColumns = exactColumnsRepository.findAllByDepartmentIdAndCreatedDateBetweenOrderByCreatedDateDesc
+                    (chosenDepartment, from, to);
+
+            if (option.equals("history")) {
+
+                List<List<HistoryOfChanges>> listList = new ArrayList<>();
+
+
+                for (ExactColumns exactColumns1 : exactColumns) {
+                    listList.add(exactColumns1.getHistoryOfChanges());
+                }
+                return listList;
+            }
+            return exactColumns;
+            //view is given department id, which I want to find
+        }
+        return new BadRequestException("Error in getting data!");
     }
+
     public ColumnNames getNamesOfColumns(String userId){
 
         String departmentId = departmentService.findDepartmentOfUser(userId).getId();
@@ -128,12 +164,21 @@ public class ExactColumnsService {
         }
         return new ColumnNames(namesOfColumnOfDefaultTable);
     }
+
     public ExactColumns getTodayDailyFilledData(LocalDate today, String userId){
 
         String departmentId = departmentService.findDepartmentOfUser(userId).getId();
 
         return exactColumnsRepository.findByCreatedDateAndDepartmentId(today, departmentId)
                 .orElseThrow(() -> new BadRequestException("Not found table with data!"));
+    }
+
+    //In this method I check if this department can be seen by this user
+    private boolean ifThisDepartmentCanBeSeenByThisUser(String checkedDeptId, String userId){
+
+        departmentService.findDepartmentByIdForAdmin(checkedDeptId, userId);
+
+        return true;
     }
 
 }

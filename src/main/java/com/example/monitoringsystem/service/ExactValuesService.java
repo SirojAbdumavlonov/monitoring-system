@@ -19,11 +19,9 @@ import java.util.List;
 public class ExactValuesService {
     private final ExactValuesRepository exactValuesRepository;
     private final ExactColumnsRepository exactColumnsRepository;
-    private final DepartmentRepository departmentRepository;
     private final ExactColumnsMapper exactColumnsMapper;
     private final ColumnNamesRepository columnNamesRepository;
     private final UserRepository userRepository;
-    private final HistoryOfChangesRepository historyOfChangesRepository;
     private final RequestForChangingValueRepository changingValueRepository;
     private final EfficiencyRepository efficiencyRepository;
 
@@ -191,8 +189,6 @@ public class ExactValuesService {
             //if it is in main table, change the value
             exactColumnsMapper.updateChangedColumn(exactColumnsDTO, exactColumns);
             //change the value
-            exactColumnsRepository.save(exactColumns);
-            //save it
         }
         else{
             for(NewColumn newColumn: exactColumns.getNewColumns()){
@@ -211,26 +207,31 @@ public class ExactValuesService {
 //                }
 //            }
 
-            exactColumnsRepository.save(exactColumns);
         }
-        Department department =
-                departmentRepository.findById(departmentId)
-                        .orElseThrow(() -> new BadRequestException("Not found!"));
+        List<HistoryOfChanges> historyOfChangesList = null;
 
         Userr userr =
                 userRepository.findById(currentUserId).
                         orElseThrow(() -> new BadRequestException("User not found!"));
+        if(exactColumns.getHistoryOfChanges().isEmpty()){
+            historyOfChangesList = new ArrayList<>();
+        }else {
+            historyOfChangesList = exactColumns.getHistoryOfChanges();
+        }
 
         HistoryOfChanges historyOfChanges =
                 HistoryOfChanges.builder()
                         .oldValue(updateRequest.getOldValue())
                         .newValue(updateRequest.getNewValue())
                         .columnName(updateRequest.getColumnName())
-                        .departmentId(department.getId())
                         .userId(userr.getId())
                         .build();
+        historyOfChangesList.add(historyOfChanges);
 
-        historyOfChangesRepository.save(historyOfChanges);
+        exactColumns.setHistoryOfChanges(historyOfChangesList);
+
+        exactColumnsRepository.save(exactColumns);
+
     }
 
     public void requestForChangingFixedValue(RequestForFixedValueModel model, String userId) {

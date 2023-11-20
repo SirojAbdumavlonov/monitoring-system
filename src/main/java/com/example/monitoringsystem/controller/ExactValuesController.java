@@ -1,14 +1,8 @@
 package com.example.monitoringsystem.controller;
 
-import com.example.monitoringsystem.constants.Tab;
-import com.example.monitoringsystem.entity.ExactColumns;
-import com.example.monitoringsystem.exception.BadRequestException;
 import com.example.monitoringsystem.model.AllColumns;
 import com.example.monitoringsystem.model.RequestForFixedValueModel;
 import com.example.monitoringsystem.model.UpdateRequest;
-import com.example.monitoringsystem.model.WholeDepartment;
-import com.example.monitoringsystem.payload.ColumnNames;
-import com.example.monitoringsystem.payload.DailyDataReturn;
 import com.example.monitoringsystem.security.CurrentUserId;
 import com.example.monitoringsystem.service.ExactColumnsService;
 import com.example.monitoringsystem.service.ExactValuesService;
@@ -24,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.List;
 
 @RestController
 @Slf4j
@@ -61,29 +54,30 @@ public class ExactValuesController {
     }
     @GetMapping("/daily-data")
     public ResponseEntity<?> getDailyData(@CurrentUserId String userId,
-                                          @RequestParam(required = false) String date,
-                                          @RequestParam(required = false) String view,
+                                          @RequestParam(required = false) LocalDate date,
+                                          @RequestParam(name = "chosen-department",required = false) String chosenDepartment,
                                           @RequestParam(name = "from", required = false) LocalDate from,
                                           @RequestParam(name = "to", required = false) LocalDate to,
                                           @RequestParam(name = "time-range", required = false, defaultValue = "thisWeek") String timeRange,
-                                          @RequestParam(name = "month", required = false) String monthName){
+                                          @RequestParam(name = "month", required = false) String monthName,
+                                          @RequestParam(name = "last-n-days", required = false) int lastNDays,
+                                          @RequestParam(name = "option", required = false) String option){
+        //Option can be history only(poka chto)
+
 
         //View is needed, if I want to see other departments' data(sub-branches)
 
         Collection<? extends GrantedAuthority> authorities =
                 SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-        if (authorities.stream().anyMatch(a -> a.getAuthority().equals("USER"))) {
-            Object columnsList =
-                    exactColumnsService.getPreviousDaysData(userId, date, view, from, to, timeRange, monthName);
-        }
-        else if(authorities.stream().anyMatch(a -> a.getAuthority().equals("SUPER_ADMIN"))){
 
-        }
-        else{//it's for admin
+        Object columnsList =
+                exactColumnsService.getPreviousDaysData
+                        (userId, date, chosenDepartment, from, to,
+                                timeRange, monthName, lastNDays, authorities, option);
 
-        }
-        ColumnNames columnNames =
-                exactColumnsService.getNamesOfColumns(userId);
+        return ResponseEntity.ok(columnsList);
+//        ColumnNames columnNames =
+//                exactColumnsService.getNamesOfColumns(userId);
 
 //        if(tab.equals(Tab.ALL)){
 //            List<ExactColumns> columnsList =
@@ -97,12 +91,12 @@ public class ExactValuesController {
 //
 //            return ResponseEntity.ok(new DailyDataReturn<>(columnNames, columns));
 //        }
-        logger.info("Error in GET request with param: {}", tab);
-        throw new BadRequestException("Error");
+//        logger.info("Error in GET request with param: {}", date);
+//        throw new BadRequestException("Error");
     }
 
     @PreAuthorize("hasAnyRole('USER','SUPER_ADMIN')")
-    @PutMapping("/daily-changes/update/{departmentId}")
+    @PutMapping("/update/daily-data/{departmentId}")
     public ResponseEntity<?> updateFieldInDb(@PathVariable String departmentId,
                                              @CurrentUserId String currentUserId,
                                              @RequestBody UpdateRequest updateRequest){
@@ -112,6 +106,7 @@ public class ExactValuesController {
 
         return ResponseEntity.ok("Changed successfully!");
     }
+
 
     @PostMapping("/update/fixed-data")
     public ResponseEntity<?> changeFixedValue(

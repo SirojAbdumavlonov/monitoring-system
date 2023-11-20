@@ -24,7 +24,7 @@ public interface DepartmentRepository extends MongoRepository<Department, String
 
     List<Department> findByIdOfMainBranch(String departmentId);
 
-    boolean existsByIdOfMainBranch(String departmentId);
+    boolean existsByIdOfMainBranchAndId(String idOfMainBranch, String subBranchId);
 
     boolean existsById(String id);
 

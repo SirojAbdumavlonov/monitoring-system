@@ -21,7 +21,7 @@ import java.util.List;
 public class ExactColumns extends DateAndTimeAudit {
     @Id
     @GeneratedValue(
-            strategy = GenerationType.IDENTITY
+            strategy = GenerationType.UUID
     )
     private String id;
 
@@ -32,11 +32,14 @@ public class ExactColumns extends DateAndTimeAudit {
     private int mouse;
     private int monitor;
     private int employees;
-    LocalDate date;
+    private LocalDate date;
 
     private String departmentId;
 
     private List<NewColumn> newColumns;
+
+    private List<HistoryOfChanges> historyOfChanges;
+
 //    @ElementCollection
 //    private List<Long> newColumnsId;
 }

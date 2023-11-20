@@ -73,16 +73,18 @@ public class DepartmentService {
         return departmentRepository.findById(departmentId).
                 orElseThrow(() -> new BadRequestException("THere is no department with this id"));
     }
-    public Department findDepartmentByIdForAdmin(String departmentID, String adminId){
+    public Department findDepartmentByIdForAdmin(String subBranchId, String adminId){
 
         Userr found = userRepository.findById(adminId)
                 .orElseThrow(() -> new RuntimeException("Not found!"));
 
-        String departmentId = found.getDepartmentId();
+        String mainDepartmentId = found.getDepartmentId();
 
-        if(departmentRepository.existsByIdOfMainBranch(departmentId)){
+        if(departmentRepository.existsByIdOfMainBranchAndId(mainDepartmentId, subBranchId)
+                            ||
+                departmentRepository.existsById(subBranchId)){
             //firstly, it checks if his branch is the main
-            return getDepartmentById(departmentID);
+            return getDepartmentById(subBranchId);
         }
         throw new BadRequestException("You don't have an access to see this department's data!");
     }

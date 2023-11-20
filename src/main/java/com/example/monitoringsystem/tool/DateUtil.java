@@ -104,4 +104,12 @@ public class DateUtil {
     public static LocalDate getEndOfLastYear() {
         return LocalDate.now().minusYears(1).withDayOfYear(LocalDate.now().minusYears(1).lengthOfYear());
     }
+    public static LocalDate getStartOfLastNDays(int n) {
+        return LocalDate.now().minusDays(n - 1); // Subtract one day to get the start of the range
+    }
+
+    public static LocalDate getEndOfLastNDays() {
+        return LocalDate.now(); // End date is the current date
+    }
+
 }

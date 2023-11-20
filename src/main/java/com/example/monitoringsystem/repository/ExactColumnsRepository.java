@@ -30,7 +30,8 @@ public interface ExactColumnsRepository extends MongoRepository<ExactColumns,Str
 
     List<ExactColumns> findAllByCreatedDateAndDepartmentIdIn(LocalDate date, List<String> ids);
 
-    List<ExactColumns> findAllByDepartmentIdIn(List<String> ids);
-    List<ExactColumns> findAllByDepartmentIdAndCreatedDateBetween(String departmentId, LocalDate from, LocalDate to);
+    List<ExactColumns> findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId(List<String> ids, LocalDate from, LocalDate to);
+    List<ExactColumns> findAllByDepartmentIdAndCreatedDateBetweenOrderByCreatedDateDesc(String departmentId, LocalDate from, LocalDate to);
+    List<ExactColumns> findAllByCreatedDateBetweenOrderByCreatedDateDescDepartmentId(LocalDate from, LocalDate to);
 
 }
