@@ -1,6 +1,7 @@
 package com.example.monitoringsystem.repository;
 
 import com.example.monitoringsystem.entity.ExactColumns;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -22,8 +23,14 @@ public interface ExactColumnsRepository extends MongoRepository<ExactColumns,Str
     List<ExactColumns> findAllByDepartmentId(String departmentId);
     Optional<ExactColumns> findByDepartmentId(String departmentId);
 
+
     Optional<ExactColumns> findByCreatedDateAndDepartmentId(LocalDate date, String departmentId);
 
     ExactColumns findByCreatedDate(LocalDate date);
+
+    List<ExactColumns> findAllByCreatedDateAndDepartmentIdIn(LocalDate date, List<String> ids);
+
+    List<ExactColumns> findAllByDepartmentIdIn(List<String> ids);
+    List<ExactColumns> findAllByDepartmentIdAndCreatedDateBetween(String departmentId, LocalDate from, LocalDate to);
 
 }

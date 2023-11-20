@@ -1,7 +1,7 @@
 package com.example.monitoringsystem.repository;
 
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.example.monitoringsystem.entity.Department;
 
@@ -25,5 +25,12 @@ public interface DepartmentRepository extends MongoRepository<Department, String
     List<Department> findByIdOfMainBranch(String departmentId);
 
     boolean existsByIdOfMainBranch(String departmentId);
+
+    boolean existsById(String id);
+
+    @Query(
+            fields = "{'id': 0}",value = "{'idOfMainBranch': ?0}"
+    )
+    List<String> findAllByIdOfMainBranch(String idOfMainBranch);
 
 }

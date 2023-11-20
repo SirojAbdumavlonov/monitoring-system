@@ -25,6 +25,7 @@ public class ExactValuesService {
     private final UserRepository userRepository;
     private final HistoryOfChangesRepository historyOfChangesRepository;
     private final RequestForChangingValueRepository changingValueRepository;
+    private final EfficiencyRepository efficiencyRepository;
 
     @Transactional
     public void saveData(AllColumns allColumns) {
@@ -71,22 +72,62 @@ public class ExactValuesService {
 //                newColumnRepository.save(newColumn);
 
     @Transactional
-    public void saveDailyData(AllColumns allColumns) {
+    public Object saveDailyData(AllColumns allColumns) {
 
         List<NewColumn> columns = null;
 
+        ExactValues exactValues =
+                exactValuesRepository.findByDepartmentId(allColumns.getDepartmentId());
+
+        List<NewColumnsToExactValue> exactValuesList =
+                exactValues.getNewColumnsToExactValueList();
+        List<NewColumnEfficiency> efficiencyList = null;
+
         LocalDate today = LocalDate.now();
+        Double newColumnsEfficiency = null;
         if (!allColumns.getNewColumns().isEmpty()) {
             columns = new ArrayList<>();
             for (NewColumnModel model : allColumns.getNewColumns()) {
                 columns.add(
-                  NewColumn.builder()
-                          .name(model.getColumnName())
-                          .value(model.getValue())
-                          .build()
+                        NewColumn.builder()
+                                .name(model.getColumnName())
+                                .value(model.getValue())
+                                .build()
                 );
             }
+
+            Double helper = null;
+            for (NewColumnsToExactValue newColumnsToExactValue : exactValuesList) {
+                for (NewColumn newColumn : columns) {
+                    if (newColumnsToExactValue.getName().equals(newColumn.getName())) {
+                        helper = getEfficiency(newColumn.getValue(), newColumnsToExactValue.getValue());
+//                        assert false;
+                        efficiencyList.add(
+                                NewColumnEfficiency.builder()
+                                        .name(newColumn.getName())
+                                        .value(helper)
+                                        .build()
+                        );
+                        newColumnsEfficiency += helper;
+                        helper = (double) 0;
+                    }
+                }
+            }
         }
+
+        //Find all fixed values of chosen department
+
+        Efficiency efficiency =
+                Efficiency.builder()
+                        .bankomats(getEfficiency(allColumns.getBankomats(), exactValues.getBankomats()))
+                        .monitor(getEfficiency(allColumns.getMonitor(), exactValues.getMonitor()))
+                        .mouse(getEfficiency(allColumns.getMouse(), exactValues.getMouse()))
+                        .computers(getEfficiency(allColumns.getComputers(), exactValues.getComputers()))
+                        .printer(getEfficiency(allColumns.getPrinter(), exactValues.getPrinter()))
+                        .employees(getEfficiency(allColumns.getEmployees(), exactValues.getEmployees()))
+                        .efficiencyList(efficiencyList)
+                        .totalEfficiency(getTotalEfficiency(allColumns, exactValues, newColumnsEfficiency))
+                        .build();
 
         ExactColumns exactColumns = ExactColumns.builder()
                 .bankomats(allColumns.getBankomats())
@@ -99,9 +140,30 @@ public class ExactValuesService {
                 .date(today)
                 .build();
 
+        efficiencyRepository.save(efficiency);
+
         exactColumnsRepository.save(exactColumns);
 
+        return new WholeDepartment<>(exactColumns, efficiency);
     }
+
+    private Double getEfficiency(int dailyData, int fixedData){
+        return (double) (dailyData / fixedData) * 100;
+    }
+    private Double getTotalEfficiency(AllColumns allColumns, ExactValues exactValues, Double newColumnsEfficiency){
+        return (
+                getEfficiency(allColumns.getBankomats(), exactValues.getBankomats()) +
+                        getEfficiency(allColumns.getMonitor(), exactValues.getMonitor()) +
+                        getEfficiency(allColumns.getMouse(), exactValues.getMouse()) +
+                        getEfficiency(allColumns.getComputers(), exactValues.getComputers()) +
+                        getEfficiency(allColumns.getPrinter(), exactValues.getPrinter()) +
+                        getEfficiency(allColumns.getEmployees(), exactValues.getEmployees()) +
+                        newColumnsEfficiency
+        );
+    }
+
+
+
     public WholeDepartment<ExactColumns, List<NewColumn>> getValues(LocalDate today){
 
         ExactColumns exactColumns =

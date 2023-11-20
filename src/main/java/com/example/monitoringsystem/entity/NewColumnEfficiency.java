@@ -15,7 +15,7 @@ public class NewColumnEfficiency {
 
     private String name;
 
-    private List<ValueWithDate> list;
+    private Double value;
 
 
 }
