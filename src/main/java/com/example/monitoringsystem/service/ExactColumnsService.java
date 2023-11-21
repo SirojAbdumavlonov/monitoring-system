@@ -3,9 +3,12 @@ package com.example.monitoringsystem.service;
 
 import com.example.monitoringsystem.entity.*;
 import com.example.monitoringsystem.exception.BadRequestException;
+import com.example.monitoringsystem.model.FromAndToDates;
+import com.example.monitoringsystem.model.ValueWithEfficiency;
 import com.example.monitoringsystem.payload.ColumnNames;
 import com.example.monitoringsystem.repository.ColumnNamesRepository;
 import com.example.monitoringsystem.repository.DepartmentRepository;
+import com.example.monitoringsystem.repository.EfficiencyRepository;
 import com.example.monitoringsystem.repository.ExactColumnsRepository;
 import com.example.monitoringsystem.tool.DateUtil;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +29,10 @@ public class ExactColumnsService {
     private final DepartmentService departmentService;
     private final ColumnNamesRepository columnNamesRepository;
     private final DepartmentRepository departmentRepository;
+    private final ReportService reportService;
+    private final EfficiencyRepository efficiencyRepository;
 
-
-    public Object getPreviousDaysData(String userId, LocalDate date, String chosenDepartment,
+    public List<ValueWithEfficiency> getPreviousDaysData(String userId, LocalDate date, String chosenDepartment,
                                       LocalDate from, LocalDate to, String timeRange,
                                       String monthName, int lastNDays, Collection<? extends GrantedAuthority> role,
                                       String option) {
@@ -37,6 +41,130 @@ public class ExactColumnsService {
         // diaposon of date should be assigned
         // to variable time range
 
+        FromAndToDates dates =
+                getFromAndToDates(date, from, to, timeRange, monthName, lastNDays);
+
+        from = dates.getFrom();
+        to = dates.getTo();
+
+        //1. Find department id where he/she works - done
+        //2. Use department id to find table(exactColumns) in which data is saved
+        //3. Write a query to find this data(use IN keyword in sql)
+        //4. Add it for method in service and ,eventually, to controller
+        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
+
+        List<ExactColumns> exactColumnsList = null;
+        List<Efficiency> efficiencyList = null;
+
+        if (role.stream().anyMatch(a -> a.getAuthority().equals("USER"))) {
+
+            if (departmentRepository.existsById(departmentId) || departmentRepository.existsByIdOfMainBranchAndId(departmentId, chosenDepartment)) {
+
+                if (chosenDepartment == null) { //of all departments of user
+
+                    List<String> subBranchesIds =
+                            departmentRepository.findAllByIdOfMainBranch(departmentId);
+
+                    subBranchesIds.add(departmentId);
+
+                     exactColumnsList = exactColumnsRepository.findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId
+                            (subBranchesIds, from, to);
+                     efficiencyList = efficiencyRepository.findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId
+                             (subBranchesIds, from, to);
+                     return reportService.mergeValueWithEfficiency(efficiencyList, exactColumnsList);
+                    //sub-branches = branches belong to one of main branches
+                }
+            }
+        }
+        else{ //This is for super admin
+            if(chosenDepartment == null){//if department is     not chosen, show all depts
+                exactColumnsList = exactColumnsRepository
+                        .findAllByCreatedDateBetweenOrderByCreatedDateDescDepartmentId(from, to);
+                efficiencyList = efficiencyRepository
+                        .findAllByCreatedDateBetweenOrderByCreatedDateDescDepartmentId(from, to);
+                return reportService.mergeValueWithEfficiency(efficiencyList, exactColumnsList);
+            }
+
+        }
+        //this part for getting history of changes of chosen department
+
+        if((ifThisDepartmentCanBeSeenByThisUser(chosenDepartment, userId) &&
+                role.stream().anyMatch(a -> a.getAuthority().equals("USER")))
+                            ||
+                role.stream().anyMatch(a -> a.getAuthority().equals("SUPER_ADMIN")
+            )){
+            //It will work if super admin is trying to access it, or
+            //If this branch can be accessed by the admin of header branch
+
+            exactColumnsList = exactColumnsRepository.findAllByDepartmentIdAndCreatedDateBetweenOrderByCreatedDateDesc
+                    (chosenDepartment, from, to);
+
+            efficiencyList = efficiencyRepository.findAllByDepartmentIdAndCreatedDateBetweenOrderByCreatedDateDesc
+                    (chosenDepartment, from, to);
+
+            return reportService.mergeValueWithEfficiency(efficiencyList, exactColumnsList);
+            //view is given department id, which I want to find
+        }
+        throw new BadRequestException("Error in getting data!");
+    }
+
+    Object getHistoryOfTableFilling(String userId, LocalDate date, String chosenDepartment,
+                                    LocalDate from, LocalDate to, String timeRange,
+                                    String monthName, int lastNDays, Collection<? extends GrantedAuthority> role,
+                                    String option){
+
+        List<ValueWithEfficiency> valueWithEfficiencies = getPreviousDaysData
+                (userId, date, chosenDepartment, from, to,
+                        timeRange, monthName, lastNDays, role, option);
+
+        List<List<HistoryOfChanges>> listList = new ArrayList<>();
+
+        for (int i = 0; i < valueWithEfficiencies.size(); i++) {
+            listList.add(valueWithEfficiencies.get(i).getValues().getHistoryOfChanges());
+        }
+        return listList;
+    }
+
+    public ColumnNames getNamesOfColumns(String userId){
+
+        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
+
+        List<String> namesOfColumnOfDefaultTable =
+                columnNamesRepository.findAllColumnNames();
+
+        ExactColumns exactColumns =
+                exactColumnsRepository.findByDepartmentId(departmentId)
+                        .orElseThrow(() -> new BadRequestException("Columns not found!"));
+        if(!exactColumns.getNewColumns().isEmpty()) {
+            List<String> namesOfNewColumns = new ArrayList<>();
+            for (NewColumn newColumn : exactColumns.getNewColumns()) {
+                namesOfNewColumns.add(
+                        newColumn.getName()
+                );
+            }
+            namesOfColumnOfDefaultTable.addAll(namesOfNewColumns);
+        }
+        return new ColumnNames(namesOfColumnOfDefaultTable);
+    }
+
+    public ExactColumns getTodayDailyFilledData(LocalDate today, String userId){
+
+        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
+
+        return exactColumnsRepository.findByCreatedDateAndDepartmentId(today, departmentId)
+                .orElseThrow(() -> new BadRequestException("Not found table with data!"));
+    }
+
+    //In this method I check if this department can be seen by this user
+    public boolean ifThisDepartmentCanBeSeenByThisUser(String checkedDeptId, String userId){
+
+        departmentService.findDepartmentByIdForAdmin(checkedDeptId, userId);
+
+        return true;
+    }
+    public FromAndToDates getFromAndToDates(LocalDate date, LocalDate from,
+                                            LocalDate to, String timeRange,
+                                            String monthName, int lastNDays){
         switch (timeRange.toLowerCase()) {
             case TimeRange.GIVEN_DATE:
                 from = date;
@@ -80,105 +208,11 @@ public class ExactColumnsService {
                 from = DateUtil.getStartOfCurrentWeek();
                 to = DateUtil.getEndOfCurrentWeek();
                 break;
-                //default, it will show current week's data
+            //default, it will show current week's data
         }
-
-
-        //1. Find department id where he/she works - done
-        //2. Use department id to find table(exactColumns) in which data is saved
-        //3. Write a query to find this data(use IN keyword in sql)
-        //4. Add it for method in service and ,eventually, to controller
-        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
-
-        if (role.stream().anyMatch(a -> a.getAuthority().equals("USER"))) {
-
-            if (departmentRepository.existsById(departmentId) || departmentRepository.existsByIdOfMainBranchAndId(departmentId, chosenDepartment)) {
-
-                if (chosenDepartment == null) { //of all departments of user
-
-                    List<String> subBranchesIds =
-                            departmentRepository.findAllByIdOfMainBranch(departmentId);
-
-                    subBranchesIds.add(departmentId);
-
-                    return exactColumnsRepository.findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId
-                            (subBranchesIds, from, to);
-                    //sub-branches = branches belong to one of main branches
-                }
-            }
-        }
-        else{ //This is for super admin
-            if(chosenDepartment == null){//if department is     not chosen, show all depts
-                return exactColumnsRepository
-                        .findAllByCreatedDateBetweenOrderByCreatedDateDescDepartmentId(from, to);
-            }
-
-        }
-        //this part for getting history of changes of chosen department
-
-        if((ifThisDepartmentCanBeSeenByThisUser(chosenDepartment, userId) &&
-                role.stream().anyMatch(a -> a.getAuthority().equals("USER")))
-                            ||
-                role.stream().anyMatch(a -> a.getAuthority().equals("SUPER_ADMIN")
-            )){
-            //It will work if super admin is trying to access it, or
-            //If this branch can be accessed by the admin of header branch
-
-            List<ExactColumns> exactColumns = exactColumnsRepository.findAllByDepartmentIdAndCreatedDateBetweenOrderByCreatedDateDesc
-                    (chosenDepartment, from, to);
-
-            if (option.equals("history")) {
-
-                List<List<HistoryOfChanges>> listList = new ArrayList<>();
-
-
-                for (ExactColumns exactColumns1 : exactColumns) {
-                    listList.add(exactColumns1.getHistoryOfChanges());
-                }
-                return listList;
-            }
-            return exactColumns;
-            //view is given department id, which I want to find
-        }
-        return new BadRequestException("Error in getting data!");
+        return new FromAndToDates(from, to);
     }
 
-    public ColumnNames getNamesOfColumns(String userId){
 
-        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
-
-        List<String> namesOfColumnOfDefaultTable =
-                columnNamesRepository.findAllColumnNames();
-
-        ExactColumns exactColumns =
-                exactColumnsRepository.findByDepartmentId(departmentId)
-                        .orElseThrow(() -> new BadRequestException("Columns not found!"));
-        if(!exactColumns.getNewColumns().isEmpty()) {
-            List<String> namesOfNewColumns = new ArrayList<>();
-            for (NewColumn newColumn : exactColumns.getNewColumns()) {
-                namesOfNewColumns.add(
-                        newColumn.getName()
-                );
-            }
-            namesOfColumnOfDefaultTable.addAll(namesOfNewColumns);
-        }
-        return new ColumnNames(namesOfColumnOfDefaultTable);
-    }
-
-    public ExactColumns getTodayDailyFilledData(LocalDate today, String userId){
-
-        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
-
-        return exactColumnsRepository.findByCreatedDateAndDepartmentId(today, departmentId)
-                .orElseThrow(() -> new BadRequestException("Not found table with data!"));
-    }
-
-    //In this method I check if this department can be seen by this user
-    private boolean ifThisDepartmentCanBeSeenByThisUser(String checkedDeptId, String userId){
-
-        departmentService.findDepartmentByIdForAdmin(checkedDeptId, userId);
-
-        return true;
-    }
 
 }

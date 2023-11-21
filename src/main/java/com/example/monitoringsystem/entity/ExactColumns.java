@@ -1,6 +1,7 @@
 package com.example.monitoringsystem.entity;
 
 import com.example.monitoringsystem.entity.audit.DateAndTimeAudit;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,7 +38,7 @@ public class ExactColumns extends DateAndTimeAudit {
     private String departmentId;
 
     private List<NewColumn> newColumns;
-
+    @JsonIgnore
     private List<HistoryOfChanges> historyOfChanges;
 
 //    @ElementCollection

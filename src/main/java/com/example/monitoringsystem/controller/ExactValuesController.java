@@ -3,6 +3,7 @@ package com.example.monitoringsystem.controller;
 import com.example.monitoringsystem.model.AllColumns;
 import com.example.monitoringsystem.model.RequestForFixedValueModel;
 import com.example.monitoringsystem.model.UpdateRequest;
+import com.example.monitoringsystem.model.ValueWithEfficiency;
 import com.example.monitoringsystem.security.CurrentUserId;
 import com.example.monitoringsystem.service.ExactColumnsService;
 import com.example.monitoringsystem.service.ExactValuesService;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -69,13 +71,17 @@ public class ExactValuesController {
 
         Collection<? extends GrantedAuthority> authorities =
                 SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+        if(!option.equals("history")) {
+            List<ValueWithEfficiency> columnsList =
+                    exactColumnsService.getPreviousDaysData
+                            (userId, date, chosenDepartment, from, to,
+                                    timeRange, monthName, lastNDays, authorities, option);
 
-        Object columnsList =
-                exactColumnsService.getPreviousDaysData
-                        (userId, date, chosenDepartment, from, to,
-                                timeRange, monthName, lastNDays, authorities, option);
+            return ResponseEntity.ok(columnsList);
+        }
+        else{
 
-        return ResponseEntity.ok(columnsList);
+        }
 //        ColumnNames columnNames =
 //                exactColumnsService.getNamesOfColumns(userId);
 
@@ -114,8 +120,6 @@ public class ExactValuesController {
             @RequestBody RequestForFixedValueModel requestForFixedValue){
 
         exactValuesService.requestForChangingFixedValue(requestForFixedValue, userId);
-
-        logger.info("Request sent!");
 
         return ResponseEntity.ok("Request sent successfully!");
     }
