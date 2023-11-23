@@ -1,7 +1,6 @@
 package com.example.monitoringsystem.service;
 
 import com.example.monitoringsystem.constants.RequestStatus;
-import com.example.monitoringsystem.constants.RequestType;
 import com.example.monitoringsystem.entity.*;
 import com.example.monitoringsystem.exception.BadRequestException;
 import com.example.monitoringsystem.model.*;
@@ -19,7 +18,7 @@ import java.util.List;
 public class ExactValuesService {
     private final ExactValuesRepository exactValuesRepository;
     private final ExactColumnsRepository exactColumnsRepository;
-    private final ExactColumnsMapper exactColumnsMapper;
+    private final ColumnsMapper exactColumnsMapper;
     private final ColumnNamesRepository columnNamesRepository;
     private final UserRepository userRepository;
     private final RequestForChangingValueRepository changingValueRepository;
@@ -235,16 +234,19 @@ public class ExactValuesService {
     }
 
     public void requestForChangingFixedValue(RequestForFixedValueModel model, String userId) {
+
         RequestForFixedValue requestForFixedValue =
                 RequestForFixedValue.builder()
                         .oldValue(model.getOldValue())
                         .newValue(model.getNewValue())
                         .message(model.getMessage())
-                        .requestType(RequestType.FIXED_VALUE)
+                        .requestType(model.getRequestType())
                         .adminId(userId)
                         .columnName(model.getColumnName())
                         .status(RequestStatus.WAITING)
+
                         .build();
+
         changingValueRepository.save(requestForFixedValue);
 
     }

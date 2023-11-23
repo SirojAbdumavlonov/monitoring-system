@@ -29,17 +29,15 @@ public class ReportController {
                                         @RequestParam(name = "to", required = false) LocalDate to,
                                         @RequestParam(name = "time-range", required = false, defaultValue = "thisWeek") String timeRange,
                                         @RequestParam(name = "month", required = false) String monthName,
-                                        @RequestParam(name = "last-n-days", required = false) int lastNDays,
-                                        @RequestParam(name = "option", required = false) String option){
+                                        @RequestParam(name = "last-n-days", required = false) int lastNDays){
 
         Collection<? extends GrantedAuthority> authorities =
                 SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+
         Object columnsList =
                 reportService.getReportData
                         (userId, date, chosenDepartment, from, to,
-                                timeRange, monthName, lastNDays, authorities, option);
-
-
+                                timeRange, monthName, lastNDays, authorities);
 
         return null;
     }

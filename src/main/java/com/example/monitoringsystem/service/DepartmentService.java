@@ -1,13 +1,15 @@
 package com.example.monitoringsystem.service;
 
 import com.example.monitoringsystem.constants.RequestStatus;
-import com.example.monitoringsystem.entity.Department;
-import com.example.monitoringsystem.entity.Location;
-import com.example.monitoringsystem.entity.RequestForFixedValue;
-import com.example.monitoringsystem.entity.Userr;
+import com.example.monitoringsystem.constants.RequestType;
+import com.example.monitoringsystem.entity.*;
 import com.example.monitoringsystem.exception.BadRequestException;
+import com.example.monitoringsystem.model.AcceptOrDeclineRequest;
+import com.example.monitoringsystem.model.DepartmentDTO;
+import com.example.monitoringsystem.model.ExactValuesDTO;
 import com.example.monitoringsystem.model.NewDepartment;
 import com.example.monitoringsystem.repository.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,10 @@ public class DepartmentService {
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
     private final RequestForChangingValueRepository forChangingValueRepository;
+    private final TableChangesRepository changesRepository;
+    private final ExactValuesRepository exactValuesRepository;
+    private final ColumnNamesRepository columnNamesRepository;
+    private final ColumnsMapper columnsMapper;
 
 
     public void saveNewDepartment(NewDepartment newDepartment) {
@@ -89,17 +95,61 @@ public class DepartmentService {
         throw new BadRequestException("You don't have an access to see this department's data!");
     }
 
+    @Transactional
+    public void acceptRequest(String requestId, AcceptOrDeclineRequest request) {
 
-    public void acceptRequest(String requestId) {
         RequestForFixedValue requestForFixedValue =
                 forChangingValueRepository.findById(requestId)
                         .orElseThrow(() -> new BadRequestException("Request not found!"));
+
         requestForFixedValue.setStatus(RequestStatus.ACCEPTED);
+
+
+        if (requestForFixedValue.getRequestType().equals(RequestType.FIXED_VALUE)){
+            ExactValues exactValues = exactValuesRepository.findById
+                    (requestForFixedValue.getDepartmentId()).
+                    orElseThrow(() -> new RuntimeException("Error!"));
+
+            ExactValuesDTO exactValuesDTO = request.getExactValuesDTO();
+
+            if(columnNamesRepository.existsByColumnName(requestForFixedValue.getColumnName())){
+                columnsMapper.updateChangedFixedColumn(exactValuesDTO, exactValues);
+            }
+            else{
+                if(!exactValues.getNewColumnsToExactValueList().isEmpty()) {
+                    for (NewColumnsToExactValue newColumn : exactValues.getNewColumnsToExactValueList()) {
+                        if (newColumn.getName().equals(requestForFixedValue.getColumnName())) {
+                            newColumn.setValue((Integer) requestForFixedValue.getNewValue());
+                        }
+                    }
+                }
+            }
+            exactValuesRepository.save(exactValues);
+        }
+        else if(requestForFixedValue.getRequestType().equals(RequestType.DEPARTMENT_VALUE)){
+            Department department = departmentRepository
+                    .findById(requestForFixedValue.getDepartmentId())
+                    .orElseThrow(() -> new BadRequestException("Wrong department id!"));
+            DepartmentDTO departmentDTO =
+                    request.getDepartmentDTO();
+            columnsMapper.updateChangedDepartmentColumn(departmentDTO, department);
+            departmentRepository.save(department);
+        }
+        TableChanges tableChanges =
+                TableChanges.builder()
+                        .type(requestForFixedValue.getRequestType())
+                        .columnName(requestForFixedValue.getColumnName())
+                        .newValue(requestForFixedValue.getNewValue())
+                        .oldValue(requestForFixedValue.getOldValue())
+                        .userId(requestForFixedValue.getAdminId())
+                        .build();
+
+        changesRepository.save(tableChanges);
 
         forChangingValueRepository.save(requestForFixedValue);
 
     }
-
+    @Transactional
     public void declineRequest(String requestId, String reason) {
         RequestForFixedValue requestForFixedValue =
                 forChangingValueRepository.findById(requestId)
@@ -108,7 +158,6 @@ public class DepartmentService {
         requestForFixedValue.setReason(reason);
 
         forChangingValueRepository.save(requestForFixedValue);
-
 
     }
 }

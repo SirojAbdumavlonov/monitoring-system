@@ -1,6 +1,7 @@
 package com.example.monitoringsystem.controller;
 
 import com.example.monitoringsystem.entity.Department;
+import com.example.monitoringsystem.model.AcceptOrDeclineRequest;
 import com.example.monitoringsystem.model.RequestForFixedValueModel;
 import com.example.monitoringsystem.security.CurrentUserId;
 import com.example.monitoringsystem.service.DepartmentService;
@@ -81,29 +82,30 @@ public class DepartmentController {
     public ResponseEntity<?> changeDepartmentValue(
             @CurrentUserId String userId,
             @RequestBody RequestForFixedValueModel requestForFixedValue){
-
+        //request type can be values which are in RequestType class
         exactValuesService.requestForChangingFixedValue(requestForFixedValue, userId);
 
         return ResponseEntity.ok("Request sent successfully!");
     }
-
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @PutMapping("/request/{requestId}")
     public ResponseEntity<?> acceptOrDeclineRequest(@PathVariable String requestId,
-                                                    @RequestParam(name = "opt") String option,
-                                                    @RequestBody String reason){
+                                                    @RequestParam(name = "option") String option,
+                                                    @RequestBody AcceptOrDeclineRequest request){
         //Option is used for accepting or declining request
         //Option can be only accept or decline
         if(option.equals("accept")){
-            departmentService.acceptRequest(requestId);
+            //request type can be only dep or fixed
+            departmentService.acceptRequest(requestId, request);
         }
         else if(option.equals("decline")){
-            departmentService.declineRequest(requestId, reason);
+            departmentService.declineRequest(requestId, request.getReason());
         }
         return null;
     }
     @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @GetMapping("/request")
-    public ResponseEntity<?> getAllRequests(@RequestParam(name = "opt", defaultValue = "waiting") String opt){
+    public ResponseEntity<?> getAllRequests(@RequestParam(name = "option", defaultValue = "waiting") String opt){
         //show requests which are in waiting status
         if(opt.equals("all")){
             return ResponseEntity.ok(requestsService.getAllValues());

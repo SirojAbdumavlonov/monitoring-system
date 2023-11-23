@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -60,6 +61,15 @@ public class AuthenticationController {
 //
 //        return null;
 //    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @PutMapping("/update/role")
+    public ResponseEntity<?> updateUserRole(@RequestParam(name = "user-id") String userId,
+                                            @RequestBody String role){
+
+
+        return null;
+    }
 
 
 }

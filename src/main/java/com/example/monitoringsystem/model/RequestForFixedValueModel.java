@@ -10,4 +10,5 @@ public class RequestForFixedValueModel {
     private Object newValue;
     private String requestType;
     private String message;
+    private String departmentId;
 }

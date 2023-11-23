@@ -54,6 +54,7 @@ public class ExactValuesController {
 
         return ResponseEntity.ok(wholeDepartment);
     }
+
     @GetMapping("/daily-data")
     public ResponseEntity<?> getDailyData(@CurrentUserId String userId,
                                           @RequestParam(required = false) LocalDate date,
@@ -75,13 +76,18 @@ public class ExactValuesController {
             List<ValueWithEfficiency> columnsList =
                     exactColumnsService.getPreviousDaysData
                             (userId, date, chosenDepartment, from, to,
-                                    timeRange, monthName, lastNDays, authorities, option);
+                                    timeRange, monthName, lastNDays, authorities);
 
             return ResponseEntity.ok(columnsList);
         }
-        else{
 
-        }
+        Object history =
+                exactColumnsService.getHistoryOfTableFilling
+                        (userId, date, chosenDepartment, from, to,
+                        timeRange, monthName, lastNDays, authorities, option);
+
+        return ResponseEntity.ok(history);
+
 //        ColumnNames columnNames =
 //                exactColumnsService.getNamesOfColumns(userId);
 
@@ -119,9 +125,11 @@ public class ExactValuesController {
             @CurrentUserId String userId,
             @RequestBody RequestForFixedValueModel requestForFixedValue){
 
+        //request type can be values which are in RequestType class
         exactValuesService.requestForChangingFixedValue(requestForFixedValue, userId);
 
         return ResponseEntity.ok("Request sent successfully!");
     }
+
 
 }

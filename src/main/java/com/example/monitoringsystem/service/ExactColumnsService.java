@@ -34,8 +34,7 @@ public class ExactColumnsService {
 
     public List<ValueWithEfficiency> getPreviousDaysData(String userId, LocalDate date, String chosenDepartment,
                                       LocalDate from, LocalDate to, String timeRange,
-                                      String monthName, int lastNDays, Collection<? extends GrantedAuthority> role,
-                                      String option) {
+                                      String monthName, int lastNDays, Collection<? extends GrantedAuthority> role) {
 
         //Given date or search through or in
         // diaposon of date should be assigned
@@ -47,10 +46,18 @@ public class ExactColumnsService {
         from = dates.getFrom();
         to = dates.getTo();
 
+
+        return getPreviousDaysData(userId, chosenDepartment, from, to, role);
+    }
+    public List<ValueWithEfficiency> getPreviousDaysData(String userId,String chosenDepartment,
+                                                         LocalDate from, LocalDate to,
+                                                         Collection<? extends GrantedAuthority> role){
+
         //1. Find department id where he/she works - done
         //2. Use department id to find table(exactColumns) in which data is saved
         //3. Write a query to find this data(use IN keyword in sql)
         //4. Add it for method in service and ,eventually, to controller
+
         String departmentId = departmentService.findDepartmentOfUser(userId).getId();
 
         List<ExactColumns> exactColumnsList = null;
@@ -67,11 +74,11 @@ public class ExactColumnsService {
 
                     subBranchesIds.add(departmentId);
 
-                     exactColumnsList = exactColumnsRepository.findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId
+                    exactColumnsList = exactColumnsRepository.findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId
                             (subBranchesIds, from, to);
-                     efficiencyList = efficiencyRepository.findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId
-                             (subBranchesIds, from, to);
-                     return reportService.mergeValueWithEfficiency(efficiencyList, exactColumnsList);
+                    efficiencyList = efficiencyRepository.findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId
+                            (subBranchesIds, from, to);
+                    return reportService.mergeValueWithEfficiency(efficiencyList, exactColumnsList);
                     //sub-branches = branches belong to one of main branches
                 }
             }
@@ -90,9 +97,9 @@ public class ExactColumnsService {
 
         if((ifThisDepartmentCanBeSeenByThisUser(chosenDepartment, userId) &&
                 role.stream().anyMatch(a -> a.getAuthority().equals("USER")))
-                            ||
+                ||
                 role.stream().anyMatch(a -> a.getAuthority().equals("SUPER_ADMIN")
-            )){
+                )){
             //It will work if super admin is trying to access it, or
             //If this branch can be accessed by the admin of header branch
 
@@ -108,14 +115,14 @@ public class ExactColumnsService {
         throw new BadRequestException("Error in getting data!");
     }
 
-    Object getHistoryOfTableFilling(String userId, LocalDate date, String chosenDepartment,
+    public Object getHistoryOfTableFilling(String userId, LocalDate date, String chosenDepartment,
                                     LocalDate from, LocalDate to, String timeRange,
                                     String monthName, int lastNDays, Collection<? extends GrantedAuthority> role,
                                     String option){
 
         List<ValueWithEfficiency> valueWithEfficiencies = getPreviousDaysData
                 (userId, date, chosenDepartment, from, to,
-                        timeRange, monthName, lastNDays, role, option);
+                        timeRange, monthName, lastNDays, role);
 
         List<List<HistoryOfChanges>> listList = new ArrayList<>();
 

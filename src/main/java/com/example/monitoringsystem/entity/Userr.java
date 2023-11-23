@@ -1,6 +1,7 @@
 package com.example.monitoringsystem.entity;
 
 import com.example.monitoringsystem.entity.audit.DateAndTimeAudit;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,9 +24,9 @@ public class Userr extends DateAndTimeAudit implements UserDetails{
     @Id
     private String id;
     private String fullName;
+    @JsonIgnore
     private RoleName roleName;
     private String password;
-
     private String departmentId;
 
 

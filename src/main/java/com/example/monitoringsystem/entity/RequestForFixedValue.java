@@ -12,9 +12,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @Builder
 public class RequestForFixedValue extends DateTimeAudit {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+
+    private String exactValuesId;
     private String adminId;//Who requested
     private String columnName;
     private Object oldValue;
@@ -23,5 +22,6 @@ public class RequestForFixedValue extends DateTimeAudit {
     private String message;
     private String reason;
     private String status;
+    private String departmentId;
 
 }

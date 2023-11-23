@@ -1,7 +1,6 @@
 package com.example.monitoringsystem.entity;
 
 import com.example.monitoringsystem.entity.audit.DateAndTimeAudit;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,12 +8,11 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
-@Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class HistoryOfChanges extends DateAndTimeAudit {
-
+@Builder
+@Data
+public class TableChanges extends DateAndTimeAudit {
     private Object oldValue;
 
     private Object newValue;
@@ -23,4 +21,7 @@ public class HistoryOfChanges extends DateAndTimeAudit {
 
     private String userId;//user who updated value
 
+    private String type;
+
+    private String departmentId;
 }
