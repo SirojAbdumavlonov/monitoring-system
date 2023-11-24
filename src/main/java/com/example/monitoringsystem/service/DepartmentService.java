@@ -27,7 +27,7 @@ public class DepartmentService {
     private final ColumnNamesRepository columnNamesRepository;
     private final ColumnsMapper columnsMapper;
 
-
+    @Transactional
     public void saveNewDepartment(NewDepartment newDepartment) {
         Location location = Location.builder()
                 .lon(newDepartment.getLon())

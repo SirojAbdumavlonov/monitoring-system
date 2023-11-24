@@ -161,19 +161,19 @@ public class ExactValuesService {
 
 
 
-    public WholeDepartment<ExactColumns, List<NewColumn>> getValues(LocalDate today){
-
-        ExactColumns exactColumns =
-                exactColumnsRepository.findByCreatedDate(today);
-
-        return new WholeDepartment<>(exactColumns, exactColumns.getNewColumns());
-    }
-    public WholeDepartment<ExactValues, List<NewColumnsToExactValue>> getFixedValues(String departmentId) {
-        ExactValues exactValues =
-                exactValuesRepository.findByDepartmentId(departmentId);
-
-        return new WholeDepartment<>(exactValues, exactValues.getNewColumnsToExactValueList());
-    }
+//    public WholeDepartment<ExactColumns, List<NewColumn>> getValues(LocalDate today){
+//
+//        ExactColumns exactColumns =
+//                exactColumnsRepository.findByCreatedDate(today);
+//
+//        return new WholeDepartment<>(exactColumns, exactColumns.getNewColumns());
+//    }
+//    public WholeDepartment<ExactValues, List<NewColumnsToExactValue>> getFixedValues(String departmentId) {
+//        ExactValues exactValues =
+//                exactValuesRepository.findByDepartmentId(departmentId);
+//
+//        return new WholeDepartment<>(exactValues, exactValues.getNewColumnsToExactValueList());
+//    }
     @Transactional
     public void updateColumns(UpdateRequest updateRequest, String departmentId, String currentUserId){
 
@@ -190,9 +190,11 @@ public class ExactValuesService {
             //change the value
         }
         else{
-            for(NewColumn newColumn: exactColumns.getNewColumns()){
-                if(newColumn.getName().equals(updateRequest.getColumnName())){
-                    newColumn.setValue(updateRequest.getNewValue());
+            if(!exactColumns.getNewColumns().isEmpty()) {
+                for (NewColumn newColumn : exactColumns.getNewColumns()) {
+                    if (newColumn.getName().equals(updateRequest.getColumnName())) {
+                        newColumn.setValue(updateRequest.getNewValue());
+                    }
                 }
             }
             //In this line of code, I know that it is newly added column, I want to find it in table of new columns
@@ -244,7 +246,6 @@ public class ExactValuesService {
                         .adminId(userId)
                         .columnName(model.getColumnName())
                         .status(RequestStatus.WAITING)
-
                         .build();
 
         changingValueRepository.save(requestForFixedValue);

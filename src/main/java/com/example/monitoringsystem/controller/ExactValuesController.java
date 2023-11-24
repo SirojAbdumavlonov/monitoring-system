@@ -84,7 +84,7 @@ public class ExactValuesController {
         Object history =
                 exactColumnsService.getHistoryOfTableFilling
                         (userId, date, chosenDepartment, from, to,
-                        timeRange, monthName, lastNDays, authorities, option);
+                        timeRange, monthName, lastNDays, authorities);
 
         return ResponseEntity.ok(history);
 

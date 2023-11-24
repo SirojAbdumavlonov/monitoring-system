@@ -5,8 +5,6 @@ import com.example.monitoringsystem.entity.*;
 import com.example.monitoringsystem.exception.BadRequestException;
 import com.example.monitoringsystem.model.FromAndToDates;
 import com.example.monitoringsystem.model.ValueWithEfficiency;
-import com.example.monitoringsystem.payload.ColumnNames;
-import com.example.monitoringsystem.repository.ColumnNamesRepository;
 import com.example.monitoringsystem.repository.DepartmentRepository;
 import com.example.monitoringsystem.repository.EfficiencyRepository;
 import com.example.monitoringsystem.repository.ExactColumnsRepository;
@@ -27,7 +25,6 @@ import java.util.List;
 public class ExactColumnsService {
     private final ExactColumnsRepository exactColumnsRepository;
     private final DepartmentService departmentService;
-    private final ColumnNamesRepository columnNamesRepository;
     private final DepartmentRepository departmentRepository;
     private final ReportService reportService;
     private final EfficiencyRepository efficiencyRepository;
@@ -117,8 +114,7 @@ public class ExactColumnsService {
 
     public Object getHistoryOfTableFilling(String userId, LocalDate date, String chosenDepartment,
                                     LocalDate from, LocalDate to, String timeRange,
-                                    String monthName, int lastNDays, Collection<? extends GrantedAuthority> role,
-                                    String option){
+                                    String monthName, int lastNDays, Collection<? extends GrantedAuthority> role){
 
         List<ValueWithEfficiency> valueWithEfficiencies = getPreviousDaysData
                 (userId, date, chosenDepartment, from, to,
@@ -126,41 +122,41 @@ public class ExactColumnsService {
 
         List<List<HistoryOfChanges>> listList = new ArrayList<>();
 
-        for (int i = 0; i < valueWithEfficiencies.size(); i++) {
-            listList.add(valueWithEfficiencies.get(i).getValues().getHistoryOfChanges());
+        for (ValueWithEfficiency valueWithEfficiency : valueWithEfficiencies) {
+            listList.add(valueWithEfficiency.getValues().getHistoryOfChanges());
         }
         return listList;
     }
 
-    public ColumnNames getNamesOfColumns(String userId){
+//    public ColumnNames getNamesOfColumns(String userId){
+//
+//        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
+//
+//        List<String> namesOfColumnOfDefaultTable =
+//                columnNamesRepository.findAllColumnNames();
+//
+//        ExactColumns exactColumns =
+//                exactColumnsRepository.findByDepartmentId(departmentId)
+//                        .orElseThrow(() -> new BadRequestException("Columns not found!"));
+//        if(!exactColumns.getNewColumns().isEmpty()) {
+//            List<String> namesOfNewColumns = new ArrayList<>();
+//            for (NewColumn newColumn : exactColumns.getNewColumns()) {
+//                namesOfNewColumns.add(
+//                        newColumn.getName()
+//                );
+//            }
+//            namesOfColumnOfDefaultTable.addAll(namesOfNewColumns);
+//        }
+//        return new ColumnNames(namesOfColumnOfDefaultTable);
+//    }
 
-        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
-
-        List<String> namesOfColumnOfDefaultTable =
-                columnNamesRepository.findAllColumnNames();
-
-        ExactColumns exactColumns =
-                exactColumnsRepository.findByDepartmentId(departmentId)
-                        .orElseThrow(() -> new BadRequestException("Columns not found!"));
-        if(!exactColumns.getNewColumns().isEmpty()) {
-            List<String> namesOfNewColumns = new ArrayList<>();
-            for (NewColumn newColumn : exactColumns.getNewColumns()) {
-                namesOfNewColumns.add(
-                        newColumn.getName()
-                );
-            }
-            namesOfColumnOfDefaultTable.addAll(namesOfNewColumns);
-        }
-        return new ColumnNames(namesOfColumnOfDefaultTable);
-    }
-
-    public ExactColumns getTodayDailyFilledData(LocalDate today, String userId){
-
-        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
-
-        return exactColumnsRepository.findByCreatedDateAndDepartmentId(today, departmentId)
-                .orElseThrow(() -> new BadRequestException("Not found table with data!"));
-    }
+//    public ExactColumns getTodayDailyFilledData(LocalDate today, String userId){
+//
+//        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
+//
+//        return exactColumnsRepository.findByCreatedDateAndDepartmentId(today, departmentId)
+//                .orElseThrow(() -> new BadRequestException("Not found table with data!"));
+//    }
 
     //In this method I check if this department can be seen by this user
     public boolean ifThisDepartmentCanBeSeenByThisUser(String checkedDeptId, String userId){
