@@ -25,7 +25,7 @@ public class DepartmentService {
     private final TableChangesRepository changesRepository;
     private final ExactValuesRepository exactValuesRepository;
     private final ColumnNamesRepository columnNamesRepository;
-    private final ColumnsMapper columnsMapper;
+    private ColumnsMapper columnsMapper;
 
     @Transactional
     public void saveNewDepartment(NewDepartment newDepartment) {

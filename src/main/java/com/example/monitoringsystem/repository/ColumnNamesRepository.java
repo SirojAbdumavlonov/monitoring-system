@@ -10,7 +10,5 @@ import java.util.List;
 @Repository
 public interface ColumnNamesRepository extends MongoRepository<ColumnNames, String> {
 
-    List<String> findAllColumnNames();
-
     boolean existsByColumnName(String columnName);
 }

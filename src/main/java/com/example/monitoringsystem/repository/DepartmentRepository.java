@@ -8,10 +8,8 @@ import com.example.monitoringsystem.entity.Department;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
+
 public interface DepartmentRepository extends MongoRepository<Department, String> {
-
-
 
     List<Department> findAll();
 
@@ -32,5 +30,7 @@ public interface DepartmentRepository extends MongoRepository<Department, String
             fields = "{'id': 0}",value = "{'idOfMainBranch': ?0}"
     )
     List<String> findAllByIdOfMainBranch(String idOfMainBranch);
+
+    Department findDepartmentById(String id);
 
 }

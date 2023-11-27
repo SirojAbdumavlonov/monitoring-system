@@ -51,18 +51,6 @@ public class ReportService {
 
         return new ReportResponse(valueWithEfficiencies, exactValues, tableChangesList);
     }
-    public List<ValueWithEfficiency> mergeValueWithEfficiency
-            (List<Efficiency> efficiencyList, List<ExactColumns> exactColumnsList){
 
-        List<ValueWithEfficiency> valueWithEfficiencies = null;
-
-        for(int i = 0; i < efficiencyList.size(); i++){
-            valueWithEfficiencies.add(
-                    new ValueWithEfficiency(exactColumnsList.get(i), efficiencyList.get(i))
-            );
-        }
-
-        return valueWithEfficiencies;
-    }
 
 }

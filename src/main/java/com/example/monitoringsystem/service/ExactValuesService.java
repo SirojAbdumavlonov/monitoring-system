@@ -18,11 +18,12 @@ import java.util.List;
 public class ExactValuesService {
     private final ExactValuesRepository exactValuesRepository;
     private final ExactColumnsRepository exactColumnsRepository;
-    private final ColumnsMapper exactColumnsMapper;
     private final ColumnNamesRepository columnNamesRepository;
     private final UserRepository userRepository;
     private final RequestForChangingValueRepository changingValueRepository;
     private final EfficiencyRepository efficiencyRepository;
+    private ColumnsMapper exactColumnsMapper;
+
 
     @Transactional
     public void saveData(AllColumns allColumns) {

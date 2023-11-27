@@ -41,7 +41,7 @@ public class ApplicationConfig {
     @Bean
     public UserDetailsService userDetailsService(){
         return id -> {
-            return userRepository.findById(Long.valueOf(id)).orElseThrow();
+            return userRepository.findById(String.valueOf(Long.valueOf(id))).orElseThrow();
         };
     }
 }

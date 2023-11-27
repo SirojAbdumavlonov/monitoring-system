@@ -26,7 +26,6 @@ public class ExactColumnsService {
     private final ExactColumnsRepository exactColumnsRepository;
     private final DepartmentService departmentService;
     private final DepartmentRepository departmentRepository;
-    private final ReportService reportService;
     private final EfficiencyRepository efficiencyRepository;
 
     public List<ValueWithEfficiency> getPreviousDaysData(String userId, LocalDate date, String chosenDepartment,
@@ -75,7 +74,7 @@ public class ExactColumnsService {
                             (subBranchesIds, from, to);
                     efficiencyList = efficiencyRepository.findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId
                             (subBranchesIds, from, to);
-                    return reportService.mergeValueWithEfficiency(efficiencyList, exactColumnsList);
+                    return mergeValueWithEfficiency(efficiencyList, exactColumnsList);
                     //sub-branches = branches belong to one of main branches
                 }
             }
@@ -86,7 +85,7 @@ public class ExactColumnsService {
                         .findAllByCreatedDateBetweenOrderByCreatedDateDescDepartmentId(from, to);
                 efficiencyList = efficiencyRepository
                         .findAllByCreatedDateBetweenOrderByCreatedDateDescDepartmentId(from, to);
-                return reportService.mergeValueWithEfficiency(efficiencyList, exactColumnsList);
+                return mergeValueWithEfficiency(efficiencyList, exactColumnsList);
             }
 
         }
@@ -106,7 +105,7 @@ public class ExactColumnsService {
             efficiencyList = efficiencyRepository.findAllByDepartmentIdAndCreatedDateBetweenOrderByCreatedDateDesc
                     (chosenDepartment, from, to);
 
-            return reportService.mergeValueWithEfficiency(efficiencyList, exactColumnsList);
+            return mergeValueWithEfficiency(efficiencyList, exactColumnsList);
             //view is given department id, which I want to find
         }
         throw new BadRequestException("Error in getting data!");
@@ -157,6 +156,20 @@ public class ExactColumnsService {
 //        return exactColumnsRepository.findByCreatedDateAndDepartmentId(today, departmentId)
 //                .orElseThrow(() -> new BadRequestException("Not found table with data!"));
 //    }
+
+    public List<ValueWithEfficiency> mergeValueWithEfficiency
+            (List<Efficiency> efficiencyList, List<ExactColumns> exactColumnsList){
+
+        List<ValueWithEfficiency> valueWithEfficiencies = null;
+
+        for(int i = 0; i < efficiencyList.size(); i++){
+            valueWithEfficiencies.add(
+                    new ValueWithEfficiency(exactColumnsList.get(i), efficiencyList.get(i))
+            );
+        }
+
+        return valueWithEfficiencies;
+    }
 
     //In this method I check if this department can be seen by this user
     public boolean ifThisDepartmentCanBeSeenByThisUser(String checkedDeptId, String userId){
