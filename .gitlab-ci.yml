@@ -1,6 +1,6 @@
 run_tests:
     image: openjdk:17.0.1-jdk-slim
     before_script:
-        -apt-get update && apt-get install make
+        - apt-get update && apt-get install make
     script:
-        -make test
+        - make test
