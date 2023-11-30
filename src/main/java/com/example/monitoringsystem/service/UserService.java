@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
     private final DepartmentRepository departmentRepository;
-    private final TemporaryUserDetailsRepository userDetailsRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -22,7 +21,8 @@ public class UserService {
 
         Department department =
                 departmentRepository.findByDepartmentName(
-                        signUpRequest.getDepartmentName()).orElseThrow(() -> new RuntimeException("No such branch"));
+                        signUpRequest.getDepartmentName())
+                        .orElseThrow(() -> new RuntimeException("No such branch"));
 
         Userr user = Userr.builder()
                 .id(signUpRequest.getId())//id of user given by super admin

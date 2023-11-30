@@ -8,12 +8,11 @@ import com.example.monitoringsystem.entity.Department;
 import java.util.List;
 import java.util.Optional;
 
-
+@Repository
 public interface DepartmentRepository extends MongoRepository<Department, String> {
 
     List<Department> findAll();
 
-    List<Department> findByAddress(String address);
 
 //    @Query("{'id': ?0, 'address': ?1}")
 //    List<Department> findDepartmentsByAddress(String id, String address2);
