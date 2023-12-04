@@ -1,9 +1,7 @@
 package com.example.monitoringsystem.entity;
 
 import com.example.monitoringsystem.entity.audit.DateTimeAudit;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;

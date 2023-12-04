@@ -13,10 +13,6 @@ public interface DepartmentRepository extends MongoRepository<Department, String
 
     List<Department> findAll();
 
-
-//    @Query("{'id': ?0, 'address': ?1}")
-//    List<Department> findDepartmentsByAddress(String id, String address2);
-
     Optional<Department> findByDepartmentName(String departmentName);
 
     List<Department> findByIdOfMainBranch(String departmentId);

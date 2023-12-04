@@ -30,16 +30,16 @@ public class DepartmentService {
     @Transactional
     public void saveNewDepartment(NewDepartment newDepartment) {
         Location location = Location.builder()
-                .lon(newDepartment.getLon())
-                .lat(newDepartment.getLat())
+                .lon(newDepartment.lon())
+                .lat(newDepartment.lat())
                 .build();
 
         Department department = Department.builder()
-                .address(newDepartment.getAddress())
-                .departmentName(newDepartment.getDepartmentName())
+                .address(newDepartment.address())
+                .departmentName(newDepartment.departmentName())
                 .location(location)
-                .idOfMainBranch(newDepartment.getIdOfMainBranch())
-                .id(newDepartment.getId())
+                .idOfMainBranch(newDepartment.idOfMainBranch())
+                .id(newDepartment.id())
                 .build();
 
 
@@ -110,7 +110,7 @@ public class DepartmentService {
                     (requestForFixedValue.getDepartmentId()).
                     orElseThrow(() -> new RuntimeException("Error!"));
 
-            ExactValuesDTO exactValuesDTO = request.getExactValuesDTO();
+            ExactValuesDTO exactValuesDTO = request.exactValuesDTO();
 
             if(columnNamesRepository.existsByColumnName(requestForFixedValue.getColumnName())){
                 columnsMapper.updateChangedFixedColumn(exactValuesDTO, exactValues);
@@ -131,7 +131,7 @@ public class DepartmentService {
                     .findById(requestForFixedValue.getDepartmentId())
                     .orElseThrow(() -> new BadRequestException("Wrong department id!"));
             DepartmentDTO departmentDTO =
-                    request.getDepartmentDTO();
+                    request.departmentDTO();
             columnsMapper.updateChangedDepartmentColumn(departmentDTO, department);
             departmentRepository.save(department);
         }

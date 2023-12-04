@@ -30,12 +30,12 @@ public class ExactValuesService {
 
         List<NewColumnsToExactValue> newColumns = new ArrayList<>();
 
-        if(allColumns.getNewColumns() != null){
-            for (NewColumnModel model : allColumns.getNewColumns()) {
+        if(allColumns.newColumns() != null){
+            for (NewColumnModel model : allColumns.newColumns()) {
                 NewColumnsToExactValue newColumn = NewColumnsToExactValue
                         .builder()
-                        .value(model.getValue())
-                        .name(model.getColumnName())
+                        .value(model.value())
+                        .name(model.columnName())
                         .build();
                 newColumns.add(newColumn);
             }
@@ -43,12 +43,12 @@ public class ExactValuesService {
 
         ExactValues exactValues = ExactValues
                 .builder()
-                .bankomats(allColumns.getBankomats())
-                .computers(allColumns.getComputers())
-                .employees(allColumns.getEmployees())
-                .monitor(allColumns.getMonitor())
-                .mouse(allColumns.getMouse())
-                .printer(allColumns.getPrinter())
+                .bankomats(allColumns.bankomats())
+                .computers(allColumns.computers())
+                .employees(allColumns.employees())
+                .monitor(allColumns.monitor())
+                .mouse(allColumns.mouse())
+                .printer(allColumns.printer())
                 .newColumnsToExactValueList(newColumns)
                 .build();
         exactValuesRepository.save(exactValues);
@@ -75,7 +75,7 @@ public class ExactValuesService {
         List<NewColumn> columns = null;
 
         ExactValues exactValues =
-                exactValuesRepository.findByDepartmentId(allColumns.getDepartmentId());
+                exactValuesRepository.findByDepartmentId(allColumns.departmentId());
 
         List<NewColumnsToExactValue> exactValuesList =
                 exactValues.getNewColumnsToExactValueList();
@@ -83,13 +83,13 @@ public class ExactValuesService {
 
         LocalDate today = LocalDate.now();
         Double newColumnsEfficiency = null;
-        if (!allColumns.getNewColumns().isEmpty()) {
+        if (!allColumns.newColumns().isEmpty()) {
             columns = new ArrayList<>();
-            for (NewColumnModel model : allColumns.getNewColumns()) {
+            for (NewColumnModel model : allColumns.newColumns()) {
                 columns.add(
                         NewColumn.builder()
-                                .name(model.getColumnName())
-                                .value(model.getValue())
+                                .name(model.columnName())
+                                .value(model.value())
                                 .build()
                 );
             }
@@ -117,23 +117,23 @@ public class ExactValuesService {
 
         Efficiency efficiency =
                 Efficiency.builder()
-                        .bankomats(getEfficiency(allColumns.getBankomats(), exactValues.getBankomats()))
-                        .monitor(getEfficiency(allColumns.getMonitor(), exactValues.getMonitor()))
-                        .mouse(getEfficiency(allColumns.getMouse(), exactValues.getMouse()))
-                        .computers(getEfficiency(allColumns.getComputers(), exactValues.getComputers()))
-                        .printer(getEfficiency(allColumns.getPrinter(), exactValues.getPrinter()))
-                        .employees(getEfficiency(allColumns.getEmployees(), exactValues.getEmployees()))
+                        .bankomats(getEfficiency(allColumns.bankomats(), exactValues.getBankomats()))
+                        .monitor(getEfficiency(allColumns.monitor(), exactValues.getMonitor()))
+                        .mouse(getEfficiency(allColumns.monitor(), exactValues.getMouse()))
+                        .computers(getEfficiency(allColumns.computers(), exactValues.getComputers()))
+                        .printer(getEfficiency(allColumns.printer(), exactValues.getPrinter()))
+                        .employees(getEfficiency(allColumns.employees(), exactValues.getEmployees()))
                         .efficiencyList(efficiencyList)
                         .totalEfficiency(getTotalEfficiency(allColumns, exactValues, newColumnsEfficiency))
                         .build();
 
         ExactColumns exactColumns = ExactColumns.builder()
-                .bankomats(allColumns.getBankomats())
-                .computers(allColumns.getComputers())
-                .mouse(allColumns.getMouse())
-                .monitor(allColumns.getMonitor())
-                .printer(allColumns.getPrinter())
-                .keyboard(allColumns.getKeyboard())
+                .bankomats(allColumns.bankomats())
+                .computers(allColumns.computers())
+                .mouse(allColumns.mouse())
+                .monitor(allColumns.monitor())
+                .printer(allColumns.printer())
+                .keyboard(allColumns.keyboard())
                 .newColumns(columns)
                 .date(today)
                 .build();
@@ -150,12 +150,12 @@ public class ExactValuesService {
     }
     private Double getTotalEfficiency(AllColumns allColumns, ExactValues exactValues, Double newColumnsEfficiency){
         return (
-                getEfficiency(allColumns.getBankomats(), exactValues.getBankomats()) +
-                        getEfficiency(allColumns.getMonitor(), exactValues.getMonitor()) +
-                        getEfficiency(allColumns.getMouse(), exactValues.getMouse()) +
-                        getEfficiency(allColumns.getComputers(), exactValues.getComputers()) +
-                        getEfficiency(allColumns.getPrinter(), exactValues.getPrinter()) +
-                        getEfficiency(allColumns.getEmployees(), exactValues.getEmployees()) +
+                getEfficiency(allColumns.bankomats(), exactValues.getBankomats()) +
+                        getEfficiency(allColumns.monitor(), exactValues.getMonitor()) +
+                        getEfficiency(allColumns.mouse(), exactValues.getMouse()) +
+                        getEfficiency(allColumns.computers(), exactValues.getComputers()) +
+                        getEfficiency(allColumns.printer(), exactValues.getPrinter()) +
+                        getEfficiency(allColumns.employees(), exactValues.getEmployees()) +
                         newColumnsEfficiency
         );
     }
@@ -179,13 +179,13 @@ public class ExactValuesService {
     public void updateColumns(UpdateRequest updateRequest, String departmentId, String currentUserId){
 
         ExactColumns exactColumns =
-                exactColumnsRepository.findByCreatedDateAndDepartmentId(updateRequest.getDate(), departmentId)
+                exactColumnsRepository.findByCreatedDateAndDepartmentId(updateRequest.date(), departmentId)
                         .orElseThrow(() -> new BadRequestException("Error in finding table of department!"));
 
         ExactColumnsDTO exactColumnsDTO =
-                updateRequest.getExactColumns();//get all changed columns
+                updateRequest.exactColumns();//get all changed columns
 
-        if(columnNamesRepository.existsByColumnName(updateRequest.getColumnName())) {//check if column was updated from main table
+        if(columnNamesRepository.existsByColumnName(updateRequest.columnName())) {//check if column was updated from main table
             //if it is in main table, change the value
             exactColumnsMapper.updateChangedColumn(exactColumnsDTO, exactColumns);
             //change the value
@@ -193,8 +193,8 @@ public class ExactValuesService {
         else{
             if(!exactColumns.getNewColumns().isEmpty()) {
                 for (NewColumn newColumn : exactColumns.getNewColumns()) {
-                    if (newColumn.getName().equals(updateRequest.getColumnName())) {
-                        newColumn.setValue(updateRequest.getNewValue());
+                    if (newColumn.getName().equals(updateRequest.columnName())) {
+                        newColumn.setValue(updateRequest.newValue());
                     }
                 }
             }
@@ -223,9 +223,9 @@ public class ExactValuesService {
 
         HistoryOfChanges historyOfChanges =
                 HistoryOfChanges.builder()
-                        .oldValue(updateRequest.getOldValue())
-                        .newValue(updateRequest.getNewValue())
-                        .columnName(updateRequest.getColumnName())
+                        .oldValue(updateRequest.oldValue())
+                        .newValue(updateRequest.newValue())
+                        .columnName(updateRequest.columnName())
                         .userId(userr.getId())
                         .build();
         historyOfChangesList.add(historyOfChanges);
@@ -240,12 +240,12 @@ public class ExactValuesService {
 
         RequestForFixedValue requestForFixedValue =
                 RequestForFixedValue.builder()
-                        .oldValue(model.getOldValue())
-                        .newValue(model.getNewValue())
-                        .message(model.getMessage())
-                        .requestType(model.getRequestType())
+                        .oldValue(model.oldValue())
+                        .newValue(model.newValue())
+                        .message(model.message())
+                        .requestType(model.requestType())
                         .adminId(userId)
-                        .columnName(model.getColumnName())
+                        .columnName(model.columnName())
                         .status(RequestStatus.WAITING)
                         .build();
 

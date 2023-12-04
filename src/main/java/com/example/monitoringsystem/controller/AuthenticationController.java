@@ -1,42 +1,43 @@
 package com.example.monitoringsystem.controller;
 
+import com.example.monitoringsystem.model.AuthenticationResponse;
 import com.example.monitoringsystem.model.SignInRequest;
 import com.example.monitoringsystem.model.SignUpRequest;
 import com.example.monitoringsystem.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class AuthenticationController {
     private final UserService userService;
 
-    private final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
 
 
     //    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @PostMapping("/sign-up")
     public ResponseEntity<?> signUp(@RequestBody SignUpRequest signUpRequest) {
-        userService.saveUser(signUpRequest);
+        AuthenticationResponse authenticationResponse =
+                userService.saveUser(signUpRequest);
 
-        logger.info("No mistake while registering!");
+        log.info("Registered successfully!");
 
-        return ResponseEntity.ok("Registered successfully!");
+        return ResponseEntity.ok(authenticationResponse);
     }
 
     @PostMapping("/sign-in")
     public ResponseEntity<?> signIn(@RequestBody SignInRequest signInRequest) {
 
-        userService.signIn(signInRequest);
+       AuthenticationResponse authenticationResponse =
+                userService.signIn(signInRequest);
 
-        logger.info("No mistake while signing in!");
+        log.info("Signed in successfully!");
 
-        return ResponseEntity.ok("Data found!");
+        return ResponseEntity.ok(authenticationResponse);
     }
 
 //    @GetMapping("/requests")

@@ -3,22 +3,19 @@ package com.example.monitoringsystem.service;
 
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.HttpServletRequest;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.net.http.HttpRequest;
 import java.security.Key;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +46,10 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    public String generateToken(UserDetails userDetails){
+        return generateToken(new HashMap<>(), userDetails.getAuthorities(), userDetails);
+    }
+
 
     public String generateToken(
             Map<String, Object> extraClaims,
@@ -65,7 +66,7 @@ public class JwtService {
                 .claim("authorities", roles)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 20))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -90,24 +91,24 @@ public class JwtService {
     }
 
 
-    public static String updateAuthorities(String token, Collection<? extends GrantedAuthority> newAuthorities) {
-        Jws<Claims> claimsJws =
-                Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
-        Claims claims = claimsJws.getBody();
-
-        List<String> roles = newAuthorities.stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-
-        // Update the 'authorities' claim in the JWT
-        claims.put("authorities", roles);
-
-        // Re-encode the JWT with updated claims
-        return Jwts.builder()
-                .setClaims(claims)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
+//    public static String updateAuthorities(String token, Collection<? extends GrantedAuthority> newAuthorities) {
+//        Jws<Claims> claimsJws =
+//                Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
+//        Claims claims = claimsJws.getBody();
+//
+//        List<String> roles = newAuthorities.stream()
+//                .map(GrantedAuthority::getAuthority)
+//                .collect(Collectors.toList());
+//
+//        // Update the 'authorities' claim in the JWT
+//        claims.put("authorities", roles);
+//
+//        // Re-encode the JWT with updated claims
+//        return Jwts.builder()
+//                .setClaims(claims)
+//                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+//                .compact();
+//    }
 
 
 }

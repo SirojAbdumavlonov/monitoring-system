@@ -1,14 +1,10 @@
 package com.example.monitoringsystem.service;
 
-import com.example.monitoringsystem.entity.Efficiency;
-import com.example.monitoringsystem.entity.ExactColumns;
 import com.example.monitoringsystem.entity.ExactValues;
 import com.example.monitoringsystem.entity.TableChanges;
 import com.example.monitoringsystem.model.FromAndToDates;
 import com.example.monitoringsystem.model.ReportResponse;
 import com.example.monitoringsystem.model.ValueWithEfficiency;
-import com.example.monitoringsystem.repository.DepartmentRepository;
-import com.example.monitoringsystem.repository.EfficiencyRepository;
 import com.example.monitoringsystem.repository.ExactValuesRepository;
 import com.example.monitoringsystem.repository.TableChangesRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +21,7 @@ public class ReportService {
     private final ExactColumnsService exactColumnsService;
     private final ExactValuesRepository exactValuesRepository;
     private final TableChangesRepository tableChangesRepository;
-    public Object getReportData(String userId, LocalDate date,
+    public ReportResponse getReportData(String userId, LocalDate date,
                                 String chosenDepartment, LocalDate from,
                                 LocalDate to, String timeRange,
                                 String monthName, int lastNDays,
@@ -34,8 +30,8 @@ public class ReportService {
         FromAndToDates dates =
                 exactColumnsService.getFromAndToDates(date, from, to, timeRange, monthName, lastNDays);
 
-        from = dates.getFrom();
-        to = dates.getTo();
+        from = dates.from();
+        to = dates.to();
 
         List<ValueWithEfficiency> valueWithEfficiencies = exactColumnsService.getPreviousDaysData
                             (userId, chosenDepartment, from, to, role);

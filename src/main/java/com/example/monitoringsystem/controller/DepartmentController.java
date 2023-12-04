@@ -27,7 +27,7 @@ public class DepartmentController {
     private final ExactValuesService exactValuesService;
     private final RequestsService requestsService;
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+//    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @GetMapping("/")
     public ResponseEntity<?> getAllDepartments(){
 
@@ -36,7 +36,7 @@ public class DepartmentController {
         return ResponseEntity.ok(allDepartments);
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+//    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @PostMapping("/add-department")
     public ResponseEntity<?> addingDepartment(@Valid @RequestBody NewDepartment newDepartment){
 
@@ -99,7 +99,7 @@ public class DepartmentController {
             departmentService.acceptRequest(requestId, request);
         }
         else if(option.equals("decline")){
-            departmentService.declineRequest(requestId, request.getReason());
+            departmentService.declineRequest(requestId, request.reason());
         }
         return null;
     }

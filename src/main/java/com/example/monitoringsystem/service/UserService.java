@@ -1,11 +1,12 @@
 package com.example.monitoringsystem.service;
 
-import com.example.monitoringsystem.constants.RequestStatus;
 import com.example.monitoringsystem.entity.*;
-import com.example.monitoringsystem.model.ReasonOfDeclining;
+import com.example.monitoringsystem.exception.BadRequestException;
+import com.example.monitoringsystem.model.AuthenticationResponse;
 import com.example.monitoringsystem.model.SignInRequest;
 import com.example.monitoringsystem.model.SignUpRequest;
 import com.example.monitoringsystem.repository.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,32 +17,48 @@ public class UserService {
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public void saveUser(SignUpRequest signUpRequest) {
+
+    @Transactional
+    public AuthenticationResponse saveUser(SignUpRequest signUpRequest) {
 
         Department department =
                 departmentRepository.findByDepartmentName(
-                        signUpRequest.getDepartmentName())
-                        .orElseThrow(() -> new RuntimeException("No such branch"));
+                        signUpRequest.departmentName())
+                        .orElseThrow(() -> new BadRequestException("No such branch!"));
+
+        if(userRepository.existsById(signUpRequest.id())){
+           throw new BadRequestException("This id has already been taken!");
+        }
+
 
         Userr user = Userr.builder()
-                .id(signUpRequest.getId())//id of user given by super admin
+                .id(signUpRequest.id())//id of user given by super admin
                 .departmentId(department.getId())
-                .fullName(signUpRequest.getFullName())
-                .password(signUpRequest.getPassword())
+                .fullName(signUpRequest.fullName())
+                .password(signUpRequest.password())
                 .roleName(RoleName.USER)
                 .build();
 
         userRepository.save(user);
+        return new AuthenticationResponse(
+                jwtService.generateToken(user)
+        );
     }
-    public void signIn(SignInRequest signInRequest){
-        Userr userr =
-                userRepository.findById(signInRequest.getId()).orElseThrow(
-                        () -> new RuntimeException("No such user with this id!")
+    @Transactional
+    public AuthenticationResponse signIn(SignInRequest signInRequest){
+
+        Userr user =
+                userRepository.findById(signInRequest.id()).orElseThrow(
+                        () -> new BadRequestException("No such user with this id!")
                 );
-        if(!passwordEncoder.matches(userr.getPassword(), passwordEncoder.encode(signInRequest.getPassword()))){
-            throw new RuntimeException("Incorrect user credentials");
+        if(!passwordEncoder.matches(user.getPassword(), passwordEncoder.encode(signInRequest.password()))){
+            throw new BadRequestException("Incorrect password!");
         }
+        return new AuthenticationResponse(
+                jwtService.generateToken(user)
+        );
     }
 
 //    public void acceptRequest(String id) {

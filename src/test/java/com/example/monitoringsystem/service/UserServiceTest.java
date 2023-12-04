@@ -14,11 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Optional;
 
 import static org.mockito.Mockito.verify;
 
@@ -30,20 +27,19 @@ public class UserServiceTest extends AbstractContainerBaseTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private DepartmentRepository departmentRepository;
+    @Mock
+    private JwtService jwtService;
 
 
     private UserService userService;
 
     @BeforeEach
     void setUp(){
-        userService = new UserService(departmentRepository, userRepository, passwordEncoder);
-    }
-    @Test
-    void registerUser(){
+        userService = new UserService(departmentRepository, userRepository, passwordEncoder, jwtService);
         Location location = Location.builder()
-            .lat(22.5)
-            .lon(33.4)
-            .build();
+                .lat(22.5)
+                .lon(33.4)
+                .build();
         Department savedDepartment =
                 Department.builder()
                         .id("100")
@@ -53,6 +49,10 @@ public class UserServiceTest extends AbstractContainerBaseTest {
                         .location(location)
                         .build();
         departmentRepository.save(savedDepartment);
+    }
+
+    @Test
+    void registerUser(){
 
         SignUpRequest signUpRequest =
                 SignUpRequest.builder()
@@ -64,16 +64,16 @@ public class UserServiceTest extends AbstractContainerBaseTest {
         userService.saveUser(signUpRequest);
 
         Department department =
-                departmentRepository.findByDepartmentName(signUpRequest.getDepartmentName())
+                departmentRepository.findByDepartmentName(signUpRequest.departmentName())
                         .orElseThrow(() -> new BadRequestException("Not found!"));
 
         Userr userr =
                 Userr.builder()
-                        .fullName(signUpRequest.getFullName())
-                        .id(signUpRequest.getId())
+                        .fullName(signUpRequest.fullName())
+                        .id(signUpRequest.id())
                         .departmentId(department.getId())
                         .roleName(RoleName.USER)
-                        .password(signUpRequest.getPassword())
+                        .password(signUpRequest.password())
                         .build();
 
         verify(userRepository).save(userr);

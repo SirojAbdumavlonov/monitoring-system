@@ -39,8 +39,8 @@ public class ExactColumnsService {
         FromAndToDates dates =
                 getFromAndToDates(date, from, to, timeRange, monthName, lastNDays);
 
-        from = dates.getFrom();
-        to = dates.getTo();
+        from = dates.from();
+        to = dates.to();
 
 
         return getPreviousDaysData(userId, chosenDepartment, from, to, role);
@@ -122,7 +122,7 @@ public class ExactColumnsService {
         List<List<HistoryOfChanges>> listList = new ArrayList<>();
 
         for (ValueWithEfficiency valueWithEfficiency : valueWithEfficiencies) {
-            listList.add(valueWithEfficiency.getValues().getHistoryOfChanges());
+            listList.add(valueWithEfficiency.values().getHistoryOfChanges());
         }
         return listList;
     }

@@ -1,7 +1,6 @@
 package com.example.monitoringsystem.entity;
 
 import com.example.monitoringsystem.entity.audit.DateAndTimeAudit;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

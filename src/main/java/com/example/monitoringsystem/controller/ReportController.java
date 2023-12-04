@@ -1,7 +1,7 @@
 package com.example.monitoringsystem.controller;
 
+import com.example.monitoringsystem.model.ReportResponse;
 import com.example.monitoringsystem.security.CurrentUserId;
-import com.example.monitoringsystem.service.ExactColumnsService;
 import com.example.monitoringsystem.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,6 @@ import java.util.Collection;
 public class ReportController {
 
     private final ReportService reportService;
-    private final ExactColumnsService exactColumnsService;
 
     @GetMapping("/report")
     public ResponseEntity<?> getReports(@CurrentUserId String userId,
@@ -34,11 +33,11 @@ public class ReportController {
         Collection<? extends GrantedAuthority> authorities =
                 SecurityContextHolder.getContext().getAuthentication().getAuthorities();
 
-        Object columnsList =
+        ReportResponse columnsList =
                 reportService.getReportData
                         (userId, date, chosenDepartment, from, to,
                                 timeRange, monthName, lastNDays, authorities);
 
-        return null;
+        return ResponseEntity.ok(columnsList);
     }
 }
