@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Document
 @Builder
@@ -25,14 +26,14 @@ public class Userr extends DateAndTimeAudit implements UserDetails{
     private String id;
     private String fullName;
     @JsonIgnore
-    private RoleName roleName;
     private String password;
     private String departmentId;
-
+    @JsonIgnore
+    private String role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(roleName.name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
 
     }
 
@@ -43,7 +44,7 @@ public class Userr extends DateAndTimeAudit implements UserDetails{
 
     @Override
     public String getUsername() {
-        return null;
+        return id;
     }
 
     @Override

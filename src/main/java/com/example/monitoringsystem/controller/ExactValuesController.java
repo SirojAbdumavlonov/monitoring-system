@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -56,7 +57,7 @@ public class ExactValuesController {
     }
 
     @GetMapping("/daily-data")
-    public ResponseEntity<?> getDailyData(@CurrentUserId String userId,
+    public ResponseEntity<?> getDailyData(@CurrentUserId UserDetails user,
                                           @RequestParam(required = false) LocalDate date,
                                           @RequestParam(name = "chosen-department",required = false) String chosenDepartment,
                                           @RequestParam(name = "from", required = false) LocalDate from,
@@ -75,7 +76,7 @@ public class ExactValuesController {
         if(!option.equals("history")) {
             List<ValueWithEfficiency> columnsList =
                     exactColumnsService.getPreviousDaysData
-                            (userId, date, chosenDepartment, from, to,
+                            (user.getUsername(), date, chosenDepartment, from, to,
                                     timeRange, monthName, lastNDays, authorities);
 
             return ResponseEntity.ok(columnsList);
@@ -83,7 +84,7 @@ public class ExactValuesController {
 
         Object history =
                 exactColumnsService.getHistoryOfTableFilling
-                        (userId, date, chosenDepartment, from, to,
+                        (user.getUsername(), date, chosenDepartment, from, to,
                         timeRange, monthName, lastNDays, authorities);
 
         return ResponseEntity.ok(history);
@@ -119,7 +120,7 @@ public class ExactValuesController {
         return ResponseEntity.ok("Changed successfully!");
     }
 
-
+    @PreAuthorize("hasAnyRole('USER','SUPER_ADMIN')")
     @PostMapping("/update/fixed-data")
     public ResponseEntity<?> changeFixedValue(
             @CurrentUserId String userId,

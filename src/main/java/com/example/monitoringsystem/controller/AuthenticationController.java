@@ -25,7 +25,9 @@ public class AuthenticationController {
                 userService.saveUser(signUpRequest);
 
         log.info("Registered successfully!");
-
+        //todo: registering with unique id
+        // already used id is working
+        // other fillings are checked by client side
         return ResponseEntity.ok(authenticationResponse);
     }
 
@@ -36,7 +38,10 @@ public class AuthenticationController {
                 userService.signIn(signInRequest);
 
         log.info("Signed in successfully!");
-
+        //todo: signing in only with id and password
+        // trying in both ways(if id or password is incorrect)
+        // incorrect password is working
+        // incorrect id is working
         return ResponseEntity.ok(authenticationResponse);
     }
 

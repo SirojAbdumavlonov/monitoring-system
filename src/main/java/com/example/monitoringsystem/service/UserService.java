@@ -8,6 +8,10 @@ import com.example.monitoringsystem.model.SignUpRequest;
 import com.example.monitoringsystem.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +22,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthenticationManager manager;
 
 
     @Transactional
@@ -33,15 +38,17 @@ public class UserService {
         }
 
 
+
         Userr user = Userr.builder()
                 .id(signUpRequest.id())//id of user given by super admin
                 .departmentId(department.getId())
                 .fullName(signUpRequest.fullName())
                 .password(signUpRequest.password())
-                .roleName(RoleName.USER)
+                .role(signUpRequest.role())
                 .build();
 
         userRepository.save(user);
+        System.out.println("user = " + user);
         return new AuthenticationResponse(
                 jwtService.generateToken(user)
         );
@@ -56,6 +63,17 @@ public class UserService {
         if(!passwordEncoder.matches(user.getPassword(), passwordEncoder.encode(signInRequest.password()))){
             throw new BadRequestException("Incorrect password!");
         }
+
+        Authentication authentication = manager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        signInRequest.id(),
+                        signInRequest.password()
+                )
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        System.out.println("user = " + user);
         return new AuthenticationResponse(
                 jwtService.generateToken(user)
         );

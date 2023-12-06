@@ -29,6 +29,12 @@ public class DepartmentService {
 
     @Transactional
     public void saveNewDepartment(NewDepartment newDepartment) {
+        if(newDepartment.idOfMainBranch() != null) {
+            if (!departmentRepository.existsById(newDepartment.idOfMainBranch())) {
+                throw new BadRequestException("There is no department with " + newDepartment.idOfMainBranch() + " id");
+            }
+        }
+
         Location location = Location.builder()
                 .lon(newDepartment.lon())
                 .lat(newDepartment.lat())
@@ -51,8 +57,9 @@ public class DepartmentService {
     }
 
     public Department findDepartmentOfUser(String userId) {
+        System.out.println("userId = " + userId);
         Userr found = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Not found!"));
+                .orElseThrow(() -> new BadRequestException("Not found!"));
 
         return getDepartmentById(found.getDepartmentId());
     }
@@ -77,7 +84,7 @@ public class DepartmentService {
     }
     public Department findDepartmentByItsIdForSuperAdmin(String departmentId){//this method is for super admin
         return departmentRepository.findById(departmentId).
-                orElseThrow(() -> new BadRequestException("THere is no department with this id"));
+                orElseThrow(() -> new BadRequestException("There is no department with this id"));
     }
     public Department findDepartmentByIdForAdmin(String subBranchId, String adminId){
 
