@@ -16,6 +16,7 @@ maven_build:
   script:
     - apt update
     - apt install -y maven
+    - mvn clean install
     - mvn clean package -DskipTests
 
 test:
