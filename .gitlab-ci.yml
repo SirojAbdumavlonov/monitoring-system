@@ -8,14 +8,14 @@ variables:
   DOCKER_IMAGE_TAG: "$CI_COMMIT_REF_NAME"
 
 before_script:
-  - apt update
-  - apt install maven
   - export MAVEN_HOME=/usr/share/maven
   - export PATH=$MAVEN_HOME/bin:$PATH
 
 maven_build:
   stage: build
   script:
+    - sudo apt-get update
+    - sudo apt install -y maven
     - mvn clean package -DskipTests
 
 test:
