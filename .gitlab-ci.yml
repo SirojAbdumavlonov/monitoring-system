@@ -1,1 +1,3 @@
-
+build_job:
+    script:
+        - echo "First pipeline!"
