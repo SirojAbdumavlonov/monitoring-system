@@ -1,33 +1,35 @@
 stages:
   - build
   - test
+  - deploy
 
 variables:
-  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
-  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
-  JDK_VERSION: "21.0.1"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  DOCKER_IMAGE_TAG: "$CI_COMMIT_REF_NAME"
 
 before_script:
-  - apt-get update -qy
-  - apt-get install -y wget
-  - wget https://download.java.net/java/GA/jdk${JDK_VERSION}/openjdk-${JDK_VERSION}_linux-x64_bin.tar.gz
-  - tar xzf openjdk-${JDK_VERSION}_linux-x64_bin.tar.gz
-  - export JAVA_HOME=$PWD/jdk-${JDK_VERSION}
-  - export PATH=$JAVA_HOME/bin:$PATH
+  - export MAVEN_HOME=/usr/share/maven
+  - export PATH=$MAVEN_HOME/bin:$PATH
 
-cache:
-  paths:
-    - .m2/repository
-    - target/
-
-
-build:
+maven_build:
   stage: build
   script:
-    - mvn $MAVEN_CLI_OPTS clean compile
+    - mvn clean package -DskipTests
 
 test:
   stage: test
   script:
-    - mvn $MAVEN_CLI_OPTS test
+    - mvn test
 
+docker_build:
+  stage: deploy
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG .
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG
+
+deploy:
+  stage: deploy
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG
+    - docker run -d --name monitoring-system -p 8080:8080 $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG
