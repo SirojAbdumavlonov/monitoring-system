@@ -12,11 +12,11 @@ import java.util.List;
 public interface EfficiencyRepository extends MongoRepository<Efficiency, String> {
 
 
-    List<Efficiency> findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId
+    List<Efficiency> findAllByDepartmentIdInAndDateBetweenOrderByDateDescDepartmentId
             (List<String> departmentId, LocalDate from, LocalDate to);
-    List<Efficiency> findAllByCreatedDateBetweenOrderByCreatedDateDescDepartmentId
+    List<Efficiency> findAllByDateBetweenOrderByDateDescDepartmentId
             (LocalDate from, LocalDate to);
-    List<Efficiency> findAllByDepartmentIdAndCreatedDateBetweenOrderByCreatedDateDesc
+    List<Efficiency> findAllByDepartmentIdAndDateBetweenOrderByDateDesc
             (String departmentId, LocalDate from, LocalDate to);
 
 

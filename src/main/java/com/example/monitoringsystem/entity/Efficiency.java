@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -16,7 +17,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Efficiency extends DateAudit {
+public class Efficiency{
 
     @Id
     @GeneratedValue(
@@ -32,6 +33,7 @@ public class Efficiency extends DateAudit {
     private Double monitor;
     private Double employees;
     private Double totalEfficiency;
+    private LocalDate date;
 
     private String departmentId;
 

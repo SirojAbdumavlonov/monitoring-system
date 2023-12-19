@@ -19,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @DynamicUpdate
-public class ExactColumns extends DateAndTimeAudit {
+public class ExactColumns{
     @Id
     @GeneratedValue(
             strategy = GenerationType.UUID

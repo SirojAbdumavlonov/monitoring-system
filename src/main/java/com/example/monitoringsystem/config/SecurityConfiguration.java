@@ -20,20 +20,19 @@ public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
-    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+//    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/sign-in", "/sign-up").permitAll()
+                        .requestMatchers("/sign-in", "/sign-up","/add-department").permitAll()
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(exceptionHandling -> exceptionHandling
-                        .accessDeniedHandler(customAccessDeniedHandler)
-                        .authenticationEntryPoint(new CustomForbiddenEntryPoint())
-                )
+//                .exceptionHandling(exceptionHandling -> exceptionHandling
+//                        .authenticationEntryPoint(new CustomForbiddenEntryPoint())
+//                )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )

@@ -13,13 +13,14 @@ import java.util.Optional;
 public interface ExactColumnsRepository extends MongoRepository<ExactColumns,String> {
 
 
-    Optional<ExactColumns> findByCreatedDateAndDepartmentId(LocalDate date, String departmentId);
+    Optional<ExactColumns> findByDateAndDepartmentId(LocalDate date, String departmentId);
 
-    List<ExactColumns> findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId
+    List<ExactColumns> findAllByDepartmentIdInAndDateBetweenOrderByDateDescDepartmentId
             (List<String> ids, LocalDate from, LocalDate to);
-    List<ExactColumns> findAllByDepartmentIdAndCreatedDateBetweenOrderByCreatedDateDesc
+    List<ExactColumns> findAllByDepartmentIdAndDateBetweenOrderByDateDesc
             (String departmentId, LocalDate from, LocalDate to);
-    List<ExactColumns> findAllByCreatedDateBetweenOrderByCreatedDateDescDepartmentId
+    List<ExactColumns> findAllByDateBetweenOrderByDateDescDepartmentId
             (LocalDate from, LocalDate to);
+    boolean existsByDate(LocalDate createdDate);
 
 }

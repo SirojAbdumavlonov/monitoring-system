@@ -25,7 +25,7 @@ public class DepartmentService {
     private final TableChangesRepository changesRepository;
     private final ExactValuesRepository exactValuesRepository;
     private final ColumnNamesRepository columnNamesRepository;
-    private ColumnsMapper columnsMapper;
+    private final ColumnsMapper columnsMapper;
 
     @Transactional
     public void saveNewDepartment(NewDepartment newDepartment) {
@@ -113,9 +113,9 @@ public class DepartmentService {
 
 
         if (requestForFixedValue.getRequestType().equals(RequestType.FIXED_VALUE)){
-            ExactValues exactValues = exactValuesRepository.findById
-                    (requestForFixedValue.getDepartmentId()).
-                    orElseThrow(() -> new RuntimeException("Error!"));
+
+            ExactValues exactValues = exactValuesRepository.
+                    findByDepartmentId(requestForFixedValue.getDepartmentId());
 
             ExactValuesDTO exactValuesDTO = request.exactValuesDTO();
 

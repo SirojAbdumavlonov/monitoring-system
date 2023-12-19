@@ -24,7 +24,7 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class JwtService {
-    private final UserRepository userRepository;
+
     private static final String SECRET_KEY = "30M18gaU4TRNnOPIcsOsp6BoCrvkxUZ2rej8OuQILnahRGarCku0eAjl5QPKpeI7gMdWSZ+9523gly72Efs4CQ==";
     private static final long EXPIRATION_TIME = 864_000_000;
 
@@ -52,23 +52,18 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails){
-        return generateToken(new HashMap<>(), userDetails.getAuthorities(), userDetails);
+        return generateToken(new HashMap<>(), userDetails);
     }
 
 
     public String generateToken(
             Map<String, Object> extraClaims,
-            Collection<? extends GrantedAuthority> authorities,
             UserDetails userDetails
     ){
-        List<String> roles = authorities.stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
 
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
-                .claim("authorities", roles)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))

@@ -1,9 +1,6 @@
 package com.example.monitoringsystem.controller;
 
-import com.example.monitoringsystem.model.AllColumns;
-import com.example.monitoringsystem.model.RequestForFixedValueModel;
-import com.example.monitoringsystem.model.UpdateRequest;
-import com.example.monitoringsystem.model.ValueWithEfficiency;
+import com.example.monitoringsystem.model.*;
 import com.example.monitoringsystem.security.CurrentUserId;
 import com.example.monitoringsystem.service.ExactColumnsService;
 import com.example.monitoringsystem.service.ExactValuesService;
@@ -41,7 +38,7 @@ public class ExactValuesController {
 
         logger.info("No mistake in saving fixed data!");
 
-        return ResponseEntity.ok("Saved successfully!");
+        return ResponseEntity.ok(new ApiResponse("Saved successfully!"));
     }
 
     // daily configuration of the table which is controlled by admins
@@ -111,25 +108,29 @@ public class ExactValuesController {
     @PreAuthorize("hasAnyRole('USER','SUPER_ADMIN')")
     @PutMapping("/update/daily-data/{departmentId}")
     public ResponseEntity<?> updateFieldInDb(@PathVariable String departmentId,
-                                             @CurrentUserId String currentUserId,
+                                             @CurrentUserId UserDetails user,
                                              @RequestBody UpdateRequest updateRequest){
+        String currentUserId = user.getUsername();
+
         exactValuesService.updateColumns(updateRequest, departmentId, currentUserId);
 
         logger.info("Data is successfully updated!");
 
-        return ResponseEntity.ok("Changed successfully!");
+        return ResponseEntity.ok(new ApiResponse("Changed successfully!"));
     }
 
     @PreAuthorize("hasAnyRole('USER','SUPER_ADMIN')")
     @PostMapping("/update/fixed-data")
     public ResponseEntity<?> changeFixedValue(
-            @CurrentUserId String userId,
+            @CurrentUserId UserDetails user,
             @RequestBody RequestForFixedValueModel requestForFixedValue){
 
         //request type can be values which are in RequestType class
+        String userId = user.getUsername();
+
         exactValuesService.requestForChangingFixedValue(requestForFixedValue, userId);
 
-        return ResponseEntity.ok("Request sent successfully!");
+        return ResponseEntity.ok(new ApiResponse("Request sent successfully!"));
     }
 
 

@@ -41,7 +41,7 @@ public class DepartmentController {
         return ResponseEntity.ok(allDepartments);
     }
 
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
+//    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @PostMapping("/add-department")
     public ResponseEntity<?> addingDepartment(@Valid @RequestBody NewDepartment newDepartment){
         //todo: only super_admin can add new department
@@ -104,8 +104,8 @@ public class DepartmentController {
     }
 
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    @PutMapping("/request/{requestId}")
-    public void acceptOrDeclineRequest(@PathVariable String requestId,
+    @PutMapping("/request")
+    public void acceptOrDeclineRequest(@RequestParam(name = "request-id") String requestId,
                                                     @RequestParam(name = "option") String option,
                                                     @RequestBody AcceptOrDeclineRequest request){
         //Option is used for accepting or declining request
@@ -120,12 +120,12 @@ public class DepartmentController {
     }
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     @GetMapping("/request")
-    public ResponseEntity<?> getAllRequests(@RequestParam(name = "option", defaultValue = "waiting") String opt){
+    public ResponseEntity<?> getAllRequests(@RequestParam(name = "option", defaultValue = "waiting") String option){
         //show requests which are in waiting status
-        if(opt.equals("all")){
+        if(option.equals("all")){
             return ResponseEntity.ok(requestsService.getAllValues());
         }
 
-        return ResponseEntity.ok(requestsService.getValues(opt.toLowerCase()));
+        return ResponseEntity.ok(requestsService.getValues(option.toLowerCase()));
     }
 }

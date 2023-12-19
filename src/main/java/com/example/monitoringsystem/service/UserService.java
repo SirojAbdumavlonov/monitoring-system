@@ -64,14 +64,14 @@ public class UserService {
             throw new BadRequestException("Incorrect password!");
         }
 
-        Authentication authentication = manager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        signInRequest.id(),
-                        signInRequest.password()
-                )
-        );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+//        Authentication authentication = manager.authenticate(
+//                new UsernamePasswordAuthenticationToken(
+//                        signInRequest.id(),
+//                        signInRequest.password()
+//                )
+//        );
+//
+//        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         System.out.println("user = " + user);
         return new AuthenticationResponse(

@@ -7,13 +7,17 @@ import com.example.monitoringsystem.model.*;
 import com.example.monitoringsystem.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ExactValuesService {
     private final ExactValuesRepository exactValuesRepository;
@@ -23,7 +27,7 @@ public class ExactValuesService {
     private final RequestForChangingValueRepository changingValueRepository;
     private final EfficiencyRepository efficiencyRepository;
     private ColumnsMapper exactColumnsMapper;
-
+    private final ColumnsMapperImpl columnsMapper;
 
     @Transactional
     public void saveData(AllColumns allColumns) {
@@ -50,6 +54,7 @@ public class ExactValuesService {
                 .mouse(allColumns.mouse())
                 .printer(allColumns.printer())
                 .newColumnsToExactValueList(newColumns)
+                .departmentId(allColumns.departmentId())
                 .build();
         exactValuesRepository.save(exactValues);
     }
@@ -74,16 +79,21 @@ public class ExactValuesService {
 
         List<NewColumn> columns = null;
 
+        ZoneId uzbekistanTimeZone = ZoneId.of("Asia/Tashkent");
+
+        LocalDate today = LocalDate.now(uzbekistanTimeZone);
+
+        if(exactColumnsRepository.existsByDate(today)){
+            throw new BadRequestException("You have already saved for this date! \n You can update only!");
+        }
+
         ExactValues exactValues =
                 exactValuesRepository.findByDepartmentId(allColumns.departmentId());
 
-        List<NewColumnsToExactValue> exactValuesList =
-                exactValues.getNewColumnsToExactValueList();
         List<NewColumnEfficiency> efficiencyList = null;
 
-        LocalDate today = LocalDate.now();
-        Double newColumnsEfficiency = null;
-        if (!allColumns.newColumns().isEmpty()) {
+        double newColumnsEfficiency = 0.0;
+        if (allColumns.newColumns() != null) {
             columns = new ArrayList<>();
             for (NewColumnModel model : allColumns.newColumns()) {
                 columns.add(
@@ -93,8 +103,10 @@ public class ExactValuesService {
                                 .build()
                 );
             }
+            List<NewColumnsToExactValue> exactValuesList =
+                    exactValues.getNewColumnsToExactValueList();
 
-            Double helper = null;
+            double helper = 0.0;
             for (NewColumnsToExactValue newColumnsToExactValue : exactValuesList) {
                 for (NewColumn newColumn : columns) {
                     if (newColumnsToExactValue.getName().equals(newColumn.getName())) {
@@ -119,12 +131,15 @@ public class ExactValuesService {
                 Efficiency.builder()
                         .bankomats(getEfficiency(allColumns.bankomats(), exactValues.getBankomats()))
                         .monitor(getEfficiency(allColumns.monitor(), exactValues.getMonitor()))
-                        .mouse(getEfficiency(allColumns.monitor(), exactValues.getMouse()))
+                        .mouse(getEfficiency(allColumns.mouse(), exactValues.getMouse()))
                         .computers(getEfficiency(allColumns.computers(), exactValues.getComputers()))
                         .printer(getEfficiency(allColumns.printer(), exactValues.getPrinter()))
                         .employees(getEfficiency(allColumns.employees(), exactValues.getEmployees()))
+                        .keyboard(getEfficiency(allColumns.keyboard(), exactValues.getKeyboard()))
                         .efficiencyList(efficiencyList)
                         .totalEfficiency(getTotalEfficiency(allColumns, exactValues, newColumnsEfficiency))
+                        .departmentId(allColumns.departmentId())
+                        .date(today)
                         .build();
 
         ExactColumns exactColumns = ExactColumns.builder()
@@ -136,6 +151,7 @@ public class ExactValuesService {
                 .keyboard(allColumns.keyboard())
                 .newColumns(columns)
                 .date(today)
+                .departmentId(allColumns.departmentId())
                 .build();
 
         efficiencyRepository.save(efficiency);
@@ -146,7 +162,8 @@ public class ExactValuesService {
     }
 
     private Double getEfficiency(int dailyData, int fixedData){
-        return (double) (dailyData / fixedData) * 100;
+        System.out.println("daily data = " + dailyData + ", fixed data = " + fixedData);
+        return ( (double) dailyData / (double) fixedData) * 100;
     }
     private Double getTotalEfficiency(AllColumns allColumns, ExactValues exactValues, Double newColumnsEfficiency){
         return (
@@ -178,8 +195,12 @@ public class ExactValuesService {
     @Transactional
     public void updateColumns(UpdateRequest updateRequest, String departmentId, String currentUserId){
 
+        exactColumnsMapper = Mappers.getMapper(ColumnsMapper.class);
+
+        log.info("Date = {}, department id = {}",updateRequest.date(), departmentId);
+        //todo: error should be corrected which is in finding row
         ExactColumns exactColumns =
-                exactColumnsRepository.findByCreatedDateAndDepartmentId(updateRequest.date(), departmentId)
+                exactColumnsRepository.findByDateAndDepartmentId(updateRequest.date(), departmentId)
                         .orElseThrow(() -> new BadRequestException("Error in finding table of department!"));
 
         ExactColumnsDTO exactColumnsDTO =
@@ -187,11 +208,14 @@ public class ExactValuesService {
 
         if(columnNamesRepository.existsByColumnName(updateRequest.columnName())) {//check if column was updated from main table
             //if it is in main table, change the value
-            exactColumnsMapper.updateChangedColumn(exactColumnsDTO, exactColumns);
+
+            log.info("Updating {} to {}", exactColumns, exactColumnsDTO);
+            columnsMapper.updateChangedColumn(exactColumnsDTO, exactColumns);
             //change the value
+            log.info("This object = {}", exactColumns);
         }
         else{
-            if(!exactColumns.getNewColumns().isEmpty()) {
+            if(exactColumns.getNewColumns() != null) {
                 for (NewColumn newColumn : exactColumns.getNewColumns()) {
                     if (newColumn.getName().equals(updateRequest.columnName())) {
                         newColumn.setValue(updateRequest.newValue());
@@ -215,7 +239,7 @@ public class ExactValuesService {
         Userr userr =
                 userRepository.findById(currentUserId).
                         orElseThrow(() -> new BadRequestException("User not found!"));
-        if(exactColumns.getHistoryOfChanges().isEmpty()){
+        if(exactColumns.getHistoryOfChanges() == null){
             historyOfChangesList = new ArrayList<>();
         }else {
             historyOfChangesList = exactColumns.getHistoryOfChanges();
@@ -247,9 +271,9 @@ public class ExactValuesService {
                         .adminId(userId)
                         .columnName(model.columnName())
                         .status(RequestStatus.WAITING)
+                        .departmentId(model.departmentId())
                         .build();
 
         changingValueRepository.save(requestForFixedValue);
-
     }
 }

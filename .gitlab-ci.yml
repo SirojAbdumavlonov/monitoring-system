@@ -1,0 +1,31 @@
+stages:
+  - build
+  - test
+
+variables:
+  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  JDK_VERSION: "21.0.1"
+
+before_script:
+  - apt-get update -qy
+  - apt-get install -y wget
+  - wget https://download.java.net/java/GA/jdk${JDK_VERSION}/openjdk-${JDK_VERSION}_linux-x64_bin.tar.gz
+  - tar xzf openjdk-${JDK_VERSION}_linux-x64_bin.tar.gz
+  - export JAVA_HOME=$PWD/jdk-${JDK_VERSION}
+  - export PATH=$JAVA_HOME/bin:$PATH
+
+cache:
+  paths:
+    - .m2/repository
+    - target/
+
+build:
+  stage: build
+  script:
+    - mvn $MAVEN_CLI_OPTS clean compile
+
+test:
+  stage: test
+  script:
+    - mvn $MAVEN_CLI_OPTS test

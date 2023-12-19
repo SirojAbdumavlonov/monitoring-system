@@ -70,9 +70,9 @@ public class ExactColumnsService {
 
                     subBranchesIds.add(departmentId);
 
-                    exactColumnsList = exactColumnsRepository.findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId
+                    exactColumnsList = exactColumnsRepository.findAllByDepartmentIdInAndDateBetweenOrderByDateDescDepartmentId
                             (subBranchesIds, from, to);
-                    efficiencyList = efficiencyRepository.findAllByDepartmentIdInAndCreatedDateBetweenOrderByCreatedDateDescDepartmentId
+                    efficiencyList = efficiencyRepository.findAllByDepartmentIdInAndDateBetweenOrderByDateDescDepartmentId
                             (subBranchesIds, from, to);
                     return mergeValueWithEfficiency(efficiencyList, exactColumnsList);
                     //sub-branches = branches belong to one of main branches
@@ -82,9 +82,9 @@ public class ExactColumnsService {
         else{ //This is for super admin
             if(chosenDepartment == null){//if department is     not chosen, show all depts
                 exactColumnsList = exactColumnsRepository
-                        .findAllByCreatedDateBetweenOrderByCreatedDateDescDepartmentId(from, to);
+                        .findAllByDateBetweenOrderByDateDescDepartmentId(from, to);
                 efficiencyList = efficiencyRepository
-                        .findAllByCreatedDateBetweenOrderByCreatedDateDescDepartmentId(from, to);
+                        .findAllByDateBetweenOrderByDateDescDepartmentId(from, to);
                 return mergeValueWithEfficiency(efficiencyList, exactColumnsList);
             }
 
@@ -99,10 +99,10 @@ public class ExactColumnsService {
             //It will work if super admin is trying to access it, or
             //If this branch can be accessed by the admin of header branch
 
-            exactColumnsList = exactColumnsRepository.findAllByDepartmentIdAndCreatedDateBetweenOrderByCreatedDateDesc
+            exactColumnsList = exactColumnsRepository.findAllByDepartmentIdAndDateBetweenOrderByDateDesc
                     (chosenDepartment, from, to);
 
-            efficiencyList = efficiencyRepository.findAllByDepartmentIdAndCreatedDateBetweenOrderByCreatedDateDesc
+            efficiencyList = efficiencyRepository.findAllByDepartmentIdAndDateBetweenOrderByDateDesc
                     (chosenDepartment, from, to);
 
             return mergeValueWithEfficiency(efficiencyList, exactColumnsList);
