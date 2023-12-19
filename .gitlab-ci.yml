@@ -14,8 +14,8 @@ before_script:
 maven_build:
   stage: build
   script:
-    - sudo apt-get update
-    - sudo apt install -y maven
+    - apt update
+    - apt install -y maven
     - mvn clean package -DskipTests
 
 test:
