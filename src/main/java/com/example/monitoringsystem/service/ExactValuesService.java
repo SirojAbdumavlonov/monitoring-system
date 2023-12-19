@@ -27,7 +27,6 @@ public class ExactValuesService {
     private final RequestForChangingValueRepository changingValueRepository;
     private final EfficiencyRepository efficiencyRepository;
     private ColumnsMapper exactColumnsMapper;
-    private final ColumnsMapperImpl columnsMapper;
 
     @Transactional
     public void saveData(AllColumns allColumns) {
@@ -210,7 +209,7 @@ public class ExactValuesService {
             //if it is in main table, change the value
 
             log.info("Updating {} to {}", exactColumns, exactColumnsDTO);
-            columnsMapper.updateChangedColumn(exactColumnsDTO, exactColumns);
+            exactColumnsMapper.updateChangedColumn(exactColumnsDTO, exactColumns);
             //change the value
             log.info("This object = {}", exactColumns);
         }
