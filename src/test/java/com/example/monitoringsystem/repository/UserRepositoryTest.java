@@ -23,11 +23,11 @@ public class UserRepositoryTest extends AbstractContainerBaseTest {
     void findById(){
 
         Userr user = Userr.builder()
-                .id("100")//id of user given by super admin
+                .userId("100")//id of user given by super admin
                 .departmentId("100")
                 .fullName("Sirojiddin Abdumavlonov")
                 .password("Siroj12@")
-                .roleName(RoleName.USER)
+                .role(RoleName.USER.toString())
                 .build();
         userRepository.save(user);
 

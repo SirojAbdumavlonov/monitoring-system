@@ -33,17 +33,17 @@ public class UserService {
                         signUpRequest.departmentName())
                         .orElseThrow(() -> new BadRequestException("No such branch!"));
 
-        if(userRepository.existsById(signUpRequest.id())){
+        if(userRepository.existsByUserId(signUpRequest.userId())){
            throw new BadRequestException("This id has already been taken!");
         }
 
 
 
         Userr user = Userr.builder()
-                .id(signUpRequest.id())//id of user given by super admin
+                .userId(signUpRequest.userId())//id of user given by super admin
                 .departmentId(department.getId())
                 .fullName(signUpRequest.fullName())
-                .password(signUpRequest.password())
+                .password(passwordEncoder.encode(signUpRequest.password()))
                 .role(signUpRequest.role())
                 .build();
 
@@ -57,21 +57,21 @@ public class UserService {
     public AuthenticationResponse signIn(SignInRequest signInRequest){
 
         Userr user =
-                userRepository.findById(signInRequest.id()).orElseThrow(
+                userRepository.findByUserId(signInRequest.userId()).orElseThrow(
                         () -> new BadRequestException("No such user with this id!")
                 );
-        if(!passwordEncoder.matches(user.getPassword(), passwordEncoder.encode(signInRequest.password()))){
-            throw new BadRequestException("Incorrect password!");
-        }
+//        if(!passwordEncoder.matches(user.getPassword(), passwordEncoder.encode(signInRequest.password()))){
+//            throw new BadRequestException("Incorrect password!");
+//        }
 
-//        Authentication authentication = manager.authenticate(
-//                new UsernamePasswordAuthenticationToken(
-//                        signInRequest.id(),
-//                        signInRequest.password()
-//                )
-//        );
-//
-//        SecurityContextHolder.getContext().setAuthentication(authentication);
+        Authentication authentication = manager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        signInRequest.userId(),
+                        signInRequest.password()
+                )
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         System.out.println("user = " + user);
         return new AuthenticationResponse(

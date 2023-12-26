@@ -22,13 +22,13 @@ public class ExactValues {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    private int bankomats;
-    private int computers;
-    private int keyboard;
-    private int printer;
-    private int mouse;
-    private int monitor;
-    private int employees;
+    private Integer bankomats;
+    private Integer computers;
+    private Integer keyboard;
+    private Integer printer;
+    private Integer mouse;
+    private Integer monitor;
+    private Integer employees;
     private LocalDate localDate;
 
     private String departmentId;

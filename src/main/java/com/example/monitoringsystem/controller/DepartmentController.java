@@ -1,12 +1,10 @@
 package com.example.monitoringsystem.controller;
 
 import com.example.monitoringsystem.entity.Department;
-import com.example.monitoringsystem.model.AcceptOrDeclineRequest;
 import com.example.monitoringsystem.model.ApiResponse;
 import com.example.monitoringsystem.model.RequestForFixedValueModel;
 import com.example.monitoringsystem.security.CurrentUserId;
 import com.example.monitoringsystem.service.DepartmentService;
-import com.example.monitoringsystem.service.ExactValuesService;
 import com.example.monitoringsystem.service.RequestsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +26,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DepartmentController {
     private final DepartmentService departmentService;
-    private final ExactValuesService exactValuesService;
     private final RequestsService requestsService;
 
+    //todo: Method is tested and works
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     @GetMapping("/")
     public ResponseEntity<?> getAllDepartments(){
@@ -40,8 +38,8 @@ public class DepartmentController {
         // it is not working only for super_admin
         return ResponseEntity.ok(allDepartments);
     }
-
-//    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    //todo: Method is tested and works
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @PostMapping("/add-department")
     public ResponseEntity<?> addingDepartment(@Valid @RequestBody NewDepartment newDepartment){
         //todo: only super_admin can add new department
@@ -50,9 +48,10 @@ public class DepartmentController {
 
         return ResponseEntity.ok(new ApiResponse("Saved successfully!"));
     }
-
+    //todo: Method is tested and works
+    // but not all parameters are checked
     @GetMapping("/add-info")
-    public ResponseEntity<?> getAllData(@CurrentUserId UserDetails user,
+    public ResponseEntity<?> getAllDataAboutDepartment(@CurrentUserId UserDetails user,
                                         @RequestParam(name = "view", required = false, defaultValue = "all") String viewOption) {
         //todo: show department information
         // for user and admin only their own department
@@ -92,40 +91,18 @@ public class DepartmentController {
         }
         return ResponseEntity.badRequest().body(new ApiResponse("Not found!"));
     }
-
-    @PostMapping("/update/add-info")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PutMapping("/update/add-info/{departmentId}")
     public ResponseEntity<?> changeDepartmentValue(
             @CurrentUserId UserDetails user,
-            @RequestBody RequestForFixedValueModel requestForFixedValue){
+            @PathVariable String departmentId,
+            @RequestBody RequestForFixedValueModel<Object> requestForFixedValue){
+
         //request type can be values which are in RequestType class
-        exactValuesService.requestForChangingFixedValue(requestForFixedValue, user.getUsername());
+        requestsService.requestForChangingFixedValue
+                (requestForFixedValue, user.getUsername(), departmentId);
 
         return ResponseEntity.ok(new ApiResponse("Request sent successfully!"));
     }
 
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
-    @PutMapping("/request")
-    public void acceptOrDeclineRequest(@RequestParam(name = "request-id") String requestId,
-                                                    @RequestParam(name = "option") String option,
-                                                    @RequestBody AcceptOrDeclineRequest request){
-        //Option is used for accepting or declining request
-        //Option can be only accept or decline
-        if(option.equals("accept")){
-            //request type can be only dep or fixed
-            departmentService.acceptRequest(requestId, request);
-        }
-        else if(option.equals("decline")){
-            departmentService.declineRequest(requestId, request.reason());
-        }
-    }
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
-    @GetMapping("/request")
-    public ResponseEntity<?> getAllRequests(@RequestParam(name = "option", defaultValue = "waiting") String option){
-        //show requests which are in waiting status
-        if(option.equals("all")){
-            return ResponseEntity.ok(requestsService.getAllValues());
-        }
-
-        return ResponseEntity.ok(requestsService.getValues(option.toLowerCase()));
-    }
 }

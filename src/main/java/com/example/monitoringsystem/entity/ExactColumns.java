@@ -1,6 +1,5 @@
 package com.example.monitoringsystem.entity;
 
-import com.example.monitoringsystem.entity.audit.DateAndTimeAudit;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,13 +25,13 @@ public class ExactColumns{
     )
     private String id;
 
-    private int bankomats;
-    private int computers;
-    private int keyboard;
-    private int printer;
-    private int mouse;
-    private int monitor;
-    private int employees;
+    private Integer bankomats;
+    private Integer computers;
+    private Integer keyboard;
+    private Integer printer;
+    private Integer mouse;
+    private Integer monitor;
+    private Integer employees;
     private LocalDate date;
 
     private String departmentId;
@@ -41,6 +40,4 @@ public class ExactColumns{
     @JsonIgnore
     private List<HistoryOfChanges> historyOfChanges;
 
-//    @ElementCollection
-//    private List<Long> newColumnsId;
 }

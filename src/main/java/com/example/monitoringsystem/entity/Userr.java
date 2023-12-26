@@ -1,6 +1,5 @@
 package com.example.monitoringsystem.entity;
 
-import com.example.monitoringsystem.entity.audit.DateAndTimeAudit;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,24 +11,25 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Document
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class Userr extends DateAndTimeAudit implements UserDetails{
+public class Userr implements UserDetails{
     @Id
-    private String id;
+    private String userId;
     private String fullName;
     @JsonIgnore
     private String password;
     private String departmentId;
     @JsonIgnore
     private String role;
+    private LocalDateTime createdDateTime;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -44,7 +44,7 @@ public class Userr extends DateAndTimeAudit implements UserDetails{
 
     @Override
     public String getUsername() {
-        return id;
+        return userId;
     }
 
     @Override

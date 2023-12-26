@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface RequestForChangingValueRepository extends MongoRepository<RequestForFixedValue, String> {
-    List<RequestForFixedValue> findByStatus(String status);
+    List<RequestForFixedValue> findByStatusOrderByLocalDateTimeDesc(String status);
 
-    List<RequestForFixedValue> findAllByOrderByCreatedDateTimeDesc();
+    List<RequestForFixedValue> findAllByOrderByLocalDateTimeDesc();
 }

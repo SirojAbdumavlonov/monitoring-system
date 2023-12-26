@@ -17,10 +17,11 @@ public class AuthenticationController {
     private final UserService userService;
 
 
-
+    //todo: Function is tested and works
     //    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @PostMapping("/sign-up")
     public ResponseEntity<?> signUp(@RequestBody SignUpRequest signUpRequest) {
+
         AuthenticationResponse authenticationResponse =
                 userService.saveUser(signUpRequest);
 
@@ -30,7 +31,7 @@ public class AuthenticationController {
         // other fillings are checked by client side
         return ResponseEntity.ok(authenticationResponse);
     }
-
+    //todo: Function is tested and works
     @PostMapping("/sign-in")
     public ResponseEntity<?> signIn(@RequestBody SignInRequest signInRequest) {
 

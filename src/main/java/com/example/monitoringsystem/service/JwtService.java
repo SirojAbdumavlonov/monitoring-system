@@ -2,9 +2,6 @@ package com.example.monitoringsystem.service;
 
 
 
-import com.example.monitoringsystem.entity.Userr;
-import com.example.monitoringsystem.exception.BadRequestException;
-import com.example.monitoringsystem.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -12,10 +9,8 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Key;
 import java.util.*;
@@ -36,7 +31,7 @@ public class JwtService {
 //        return generateToken(new HashMap<>(), userDetails);
 //    }
 
-    public Boolean isTokenValid(String token, UserDetails userDetails){
+    public boolean isTokenValid(String token, UserDetails userDetails){
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }

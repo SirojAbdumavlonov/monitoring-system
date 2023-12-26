@@ -5,7 +5,7 @@ import lombok.Builder;
 
 
 @Builder
-public record SignUpRequest(String id, String fullName, String password, String departmentName,
+public record SignUpRequest(String userId, String fullName, String password, String departmentName,
                             String role) {
 
 }

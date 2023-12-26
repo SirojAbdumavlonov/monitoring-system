@@ -7,12 +7,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class HistoryOfChanges extends DateAndTimeAudit {
+public class HistoryOfChanges{
 
     private Object oldValue;
 
@@ -22,4 +23,5 @@ public class HistoryOfChanges extends DateAndTimeAudit {
 
     private String userId;//user who updated value
 
+    private LocalDateTime createdDateTime;
 }
