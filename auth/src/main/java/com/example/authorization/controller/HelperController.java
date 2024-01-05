@@ -15,5 +15,9 @@ public class HelperController {
     public Userr getUser(@PathVariable String userId){
         return userService.getUser(userId);
     }
+    @GetMapping("/user-id/{userId}")
+    public String getUserId(@PathVariable String userId){
+        return userService.getUser(userId).getUserId();
+    }
 
 }

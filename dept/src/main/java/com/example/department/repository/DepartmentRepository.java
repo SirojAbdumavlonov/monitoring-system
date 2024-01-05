@@ -1,6 +1,7 @@
 package com.example.department.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.example.department.entity.Department;
 
@@ -19,6 +20,10 @@ public interface DepartmentRepository extends JpaRepository<Department, String> 
     boolean existsByIdOfMainBranchAndId(String idOfMainBranch, String subBranchId);
 
     boolean existsById(String id);
+    @Query(
+            "SELECT d.id FROM Department d WHERE d.idOfMainBranch = ?1"
+    )
+    List<String> findAllByIdOfMainBranch(String departmentId);
 
 
 }

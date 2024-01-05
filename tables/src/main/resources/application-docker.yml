@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: tables
+  data:
+    mongodb:
+      uri: mongodb://mongo:27017/tables  # Change the URI based on your MongoDB setup
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  zipkin:
+    base-url: http://zipkin:9411
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
+    enabled: false

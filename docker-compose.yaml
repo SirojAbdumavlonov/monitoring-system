@@ -1,5 +1,10 @@
 version: "3.8"
 services:
+  redis:
+    image: redis:latest
+    container_name: my-redis-container
+    ports:
+      - "6379:6379"
   postgres:
     container_name: postgres
     image: postgres
@@ -59,58 +64,80 @@ services:
       - ME_CONFIG_MONGODB_ADMINPASSWORD=rootpass
       - ME_CONFIG_MONGODB_SERVER=mongodb
 
-  auth:
-    image: monitoring-system/auth:latest
-    container_name: auth
+  eureka-server:
+    container_name: eureka-server
+    image: monitoring-system/eureka-server:latest
     ports:
-      - "8082:8082"
+      - "8761:8761"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     networks:
       - spring
     depends_on:
       - zipkin
-      - eureka-server
-
-  dept:
-    image: monitoring-system/dept:latest
-    container_name: dept
-    ports:
-      - "8083:8083"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-    networks:
-      - spring
-    depends_on:
-      - zipkin
-      - eureka-server
-  request:
-    image: monitoring-system/request:latest
-    container_name: request
-    ports:
-      - "8084:8084"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-    networks:
-      - spring
-    depends_on:
-      - zipkin
-      - eureka-server
-  tables:
-    image: monitoring-system/tables:latest
-    container_name: tables
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-    networks:
-      - spring
-    depends_on:
-      - zipkin
-      - eureka-server
+#  auth:
+#    image: monitoring-system/auth:latest
+#    container_name: auth
+#    ports:
+#      - "8082:8082"
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=docker
+#    networks:
+#      - spring
+#    depends_on:
+#      - zipkin
+#      - eureka-server
+#
+#  dept:
+#    image: monitoring-system/dept:latest
+#    container_name: dept
+#    ports:
+#      - "8083:8083"
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=docker
+#    networks:
+#      - spring
+#    depends_on:
+#      - zipkin
+#      - eureka-server
+#  request:
+#    image: monitoring-system/request:latest
+#    container_name: request
+#    ports:
+#      - "8084:8084"
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=docker
+#    networks:
+#      - spring
+#    depends_on:
+#      - zipkin
+#      - eureka-server
+#  tables:
+#    image: monitoring-system/tables:latest
+#    container_name: tables
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=docker
+#    networks:
+#      - spring
+#    depends_on:
+#      - zipkin
+#      - eureka-server
 volumes:
   data: {}
+  postgres:
+  pgadmin:
 
 networks:
   default:
     name: mongodb_network
+  postgres:
+    external: true
+  mongodb_network:
+    external: true
+  spring:
+    driver: bridge
+    external: true
+
+

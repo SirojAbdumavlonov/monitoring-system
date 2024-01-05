@@ -7,6 +7,7 @@ import com.example.department.model.*;
 import com.example.department.repository.*;
 import com.example.department.tool.MapperProperties;
 import com.util.constants.Localhost;
+import com.util.model.DepartmentAndSubBranches;
 import com.util.model.DepartmentDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,10 @@ public class DepartmentService {
                 .findById(departmentId)
                 .orElseThrow(() -> new com.util.exception.BadRequestException("Wrong department id!"));
 
-        mapperProperties.copyNonNullProperties(departmentDTO, department);
+        DepartmentDto departmentDto = new DepartmentDto(departmentDTO.address(),
+                departmentDTO.departmentName(), department.getLocation(), departmentDTO.idOfMainBranch());
+
+        mapperProperties.copyNonNullProperties(departmentDto, department);
 
         departmentRepository.save(department);
     }
@@ -86,6 +90,15 @@ public class DepartmentService {
                 .block();
 
         return getDepartmentById(found.getDepartmentId());
+    }
+    public DepartmentAndSubBranches getDepartmentAndSubBranches(String userId){
+        String departmentId = findDepartmentOfUser(userId).getId();
+        return new DepartmentAndSubBranches(departmentId, departmentRepository.findAllByIdOfMainBranch(departmentId));
+    }
+    public Boolean checkExistenceDepartmentId(String departmentId, String chosenDepartmentId){
+        return departmentRepository.existsById(departmentId) ||
+                departmentRepository.existsByIdOfMainBranchAndId
+                        (departmentId, chosenDepartmentId);
     }
 
     public List<Department> findAllDepartments() {

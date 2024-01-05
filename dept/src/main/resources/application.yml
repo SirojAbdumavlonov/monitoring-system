@@ -2,7 +2,7 @@ server:
   port: 8083
 spring:
   application:
-    name: department
+    name: dept
   datasource:
     password: Siroj12@
     url: jdbc:postgresql://localhost:5432/department
