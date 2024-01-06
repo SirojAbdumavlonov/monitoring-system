@@ -2,7 +2,7 @@ package com.request.service;
 
 import com.request.entity.RequestForFixedValue;
 import com.util.model.AcceptOrDeclineRequest;
-import com.request.model.RequestForFixedValueModel;
+import com.util.model.RequestForFixedValueModel;
 import com.request.repository.RequestForChangingValueRepository;
 import com.util.constants.Localhost;
 import com.util.constants.RequestStatus;

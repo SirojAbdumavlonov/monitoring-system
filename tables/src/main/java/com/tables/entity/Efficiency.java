@@ -1,6 +1,5 @@
 package com.tables.entity;
 
-import com.example.tables.entity.audit.DateAudit;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

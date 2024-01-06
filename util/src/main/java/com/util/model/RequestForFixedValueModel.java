@@ -1,4 +1,4 @@
-package com.request.model;
+package com.util.model;
 
 
 import com.util.model.ChangedColumnWithMessage;

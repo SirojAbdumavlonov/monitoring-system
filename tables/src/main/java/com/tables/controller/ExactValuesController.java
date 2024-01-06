@@ -1,16 +1,22 @@
 package com.tables.controller;
 
-import com.example.tables.model.*;
-import com.example.tables.security.CurrentUserId;
-import com.tables.service.ExactValuesService;
-import com.example.tables.service.RequestsService;
+import com.util.constants.Localhost;
+import com.util.model.ApiResponse;
+import com.util.model.RequestForChangingFixedValueModel;
+import com.util.model.RequestForFixedValueModel;
+import com.util.security.CurrentUserId;
 import com.tables.model.AllColumns;
+import com.tables.service.ExactValuesService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClient;
 
 
 @RestController
@@ -19,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class ExactValuesController {
 
     private final ExactValuesService exactValuesService;
-    private final RequestsService requestsService;
+    private final WebClient webClient;
 
     // fixed data
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','USER')")
@@ -47,7 +53,15 @@ public class ExactValuesController {
         //request type can be values which are in RequestType class
         String userId = user.getUsername();
 
-        requestsService.requestForChangingFixedValue(requestForFixedValue, userId, departmentId);
+        webClient.post()
+                        .uri(Localhost.REQUEST + "send-request-to-save")
+                                .bodyValue(new RequestForChangingFixedValueModel(
+                                        requestForFixedValue,
+                                        userId,
+                                        departmentId
+                                ))
+                .retrieve()
+                .bodyToMono(Void.class);
 
         return ResponseEntity.ok(new ApiResponse("Request sent successfully!"));
     }

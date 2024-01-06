@@ -15,7 +15,7 @@ import com.util.model.NewColumnModel;
 import com.util.tool.DateUtil;
 import com.tables.tool.MapperProperties;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ import java.util.List;
 
 
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Slf4j
 public class ExactColumnsService {
     private final ExactColumnsRepository exactColumnsRepository;
@@ -75,8 +75,8 @@ public class ExactColumnsService {
 
         String departmentId = department.departmentId();
 
-        List<ExactColumns> exactColumnsList = null;
-        List<Efficiency> efficiencyList = null;
+        List<ExactColumns> exactColumnsList;
+        List<Efficiency> efficiencyList;
 
         Boolean existenceByIdAndSubBranches =
                 webClient.get()

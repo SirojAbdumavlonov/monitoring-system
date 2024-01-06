@@ -1,7 +1,7 @@
 package com.tables.controller;
 
 import com.tables.model.ReportResponse;
-import com.example.tables.security.CurrentUserId;
+import com.util.security.CurrentUserId;
 import com.tables.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

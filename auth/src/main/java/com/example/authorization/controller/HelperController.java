@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class HelperController {
     private final UserService userService;
     @GetMapping("/user/{userId}")
-    public Userr getUser(@PathVariable String userId){
-        return userService.getUser(userId);
+    public String getUserDepartmentId(@PathVariable String userId){
+        return userService.getUser(userId).getDepartmentId();
     }
     @GetMapping("/user-id/{userId}")
     public String getUserId(@PathVariable String userId){

@@ -1,10 +1,11 @@
 package com.example.department.service;
 
-import com.example.authorization.entity.Userr;
-import com.example.department.entity.*;
-import com.example.authorization.exception.BadRequestException;
-import com.example.department.model.*;
-import com.example.department.repository.*;
+import com.util.exception.BadRequestException;
+import com.example.department.entity.Department;
+import com.example.department.entity.Location;
+import com.example.department.model.DepartmentDto;
+import com.example.department.model.NewDepartment;
+import com.example.department.repository.DepartmentRepository;
 import com.example.department.tool.MapperProperties;
 import com.util.constants.Localhost;
 import com.util.model.DepartmentAndSubBranches;
@@ -83,13 +84,13 @@ public class DepartmentService {
 
     public Department findDepartmentOfUser(String userId) {
 
-        Userr found = webClient.get()
+        String foundDepartmentId = webClient.get()
                 .uri(Localhost.AUTH + "user/" + userId)
                 .retrieve()
-                .bodyToMono(Userr.class)
+                .bodyToMono(String.class)
                 .block();
 
-        return getDepartmentById(found.getDepartmentId());
+        return getDepartmentById(foundDepartmentId);
     }
     public DepartmentAndSubBranches getDepartmentAndSubBranches(String userId){
         String departmentId = findDepartmentOfUser(userId).getId();

@@ -1,7 +1,7 @@
 package com.request.controller;
 
 import com.util.model.AcceptOrDeclineRequest;
-import com.request.model.RequestForFixedValueModel;
+import com.util.model.RequestForFixedValueModel;
 import com.request.service.RequestsService;
 import com.util.model.ApiResponse;
 import com.util.security.CurrentUserId;

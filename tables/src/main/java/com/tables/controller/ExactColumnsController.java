@@ -1,11 +1,12 @@
 package com.tables.controller;
 
 import com.tables.model.AllColumns;
-import com.example.tables.model.ApiResponse;
 import com.tables.model.UpdateRequest;
 import com.tables.model.ValueWithEfficiency;
-import com.example.tables.security.CurrentUserId;
+import com.util.model.ApiResponse;
+import com.util.security.CurrentUserId;
 import com.tables.service.ExactColumnsService;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ import java.util.Collection;
 import java.util.List;
 
 @RestController
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Slf4j
 public class ExactColumnsController {
     private final ExactColumnsService exactColumnsService;
