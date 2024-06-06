@@ -15,7 +15,7 @@ import java.util.List;
 @Document
 @Data
 @Builder
-public class RequestForFixedValue{
+public class Request {
     @Id
     @GeneratedValue(
             strategy = GenerationType.IDENTITY

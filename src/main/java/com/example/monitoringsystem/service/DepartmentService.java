@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -21,14 +22,15 @@ import java.util.List;
 public class DepartmentService {
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
-    private final RequestForChangingValueRepository forChangingValueRepository;
-    private final TableChangesRepository changesRepository;
+    private final RequestForChangingValueRepository requestRepository;
+    private final TableChangesRepository tableChangesRepository;
     private final ExactValuesRepository exactValuesRepository;
     private final ColumnNamesRepository columnNamesRepository;
     private final MapperProperties mapperProperties;
 
     @Transactional
     public void saveNewDepartment(NewDepartment newDepartment) {
+
         if(newDepartment.idOfMainBranch() != null) {
             if (!departmentRepository.existsById(newDepartment.idOfMainBranch())) {
                 throw new BadRequestException("There is no department with " + newDepartment.idOfMainBranch() + " id");
@@ -47,7 +49,6 @@ public class DepartmentService {
                 .idOfMainBranch(newDepartment.idOfMainBranch())
                 .id(newDepartment.id())
                 .build();
-
 
         departmentRepository.save(department);
     }
@@ -76,7 +77,7 @@ public class DepartmentService {
         Department department = getDepartmentById(departmentId);
 
 
-        List<Department> getAllDepartments = new java.util.ArrayList<>(List.of(department));
+        List<Department> getAllDepartments = new ArrayList<>(List.of(department));
 
         getAllDepartments.addAll(departmentRepository.findByIdOfMainBranch(departmentId));
 
@@ -103,86 +104,128 @@ public class DepartmentService {
     }
 
     @Transactional
-    public ResponseEntity<?> acceptRequest(String requestId, AcceptOrDeclineRequest request) {
+    public ResponseEntity<?> acceptRequest(String requestId, AcceptOrDeclineRequest acceptOrDeclineRequest) {
 
-        RequestForFixedValue requestForFixedValue =
-                forChangingValueRepository.findById(requestId)
+        Request request =
+                requestRepository.findById(requestId)
                         .orElseThrow(() -> new BadRequestException("Request not found!"));
 
-        requestForFixedValue.setStatus(RequestStatus.ACCEPTED);
+        request.setStatus(RequestStatus.ACCEPTED);
 
-
-        if (requestForFixedValue.getRequestType().equals(RequestType.FIXED_VALUE)){
+        if (request.getRequestType().equals(RequestType.FIXED_VALUE)){
 
             ExactValues exactValues = exactValuesRepository.
-                    findByDepartmentId(requestForFixedValue.getDepartmentId());
+                    findByDepartmentId(request.getDepartmentId());
 
-            ExactValuesDTO exactValuesDTO = request.exactValuesDTO();
-            log.info("exact = {}", exactValues);
-            log.info("dto = {}", exactValuesDTO);
+            ExactValuesDTO exactValuesDTO = acceptOrDeclineRequest.exactValuesDTO();
 
-            for (ChangedColumnWithMessage<Object> changedColumnWIthMessage : requestForFixedValue.getChangedColumnWithMessages()) {
-
-                if (columnNamesRepository.existsByColumnName(changedColumnWIthMessage.columnName())) {
-
-                    mapperProperties.copyNonNullProperties(exactValuesDTO, exactValues);
-
-                    log.info("exact values = {}", exactValues);
-                } else {
-                    if (exactValues.getNewColumnsToExactValueList() != null) {
-                        for (NewColumnsToExactValue newColumn : exactValues.getNewColumnsToExactValueList()) {
-                            if (newColumn.getName().equals(changedColumnWIthMessage.columnName())) {
-
-                                newColumn.setValue((Integer) changedColumnWIthMessage.newValue());
-                            }
-                        }
-                    }
-                }
-            }
+            getChangedColumnsOfDailyMonitoringPageAndSave(
+                    request.getChangedColumnWithMessages(),
+                    exactValuesDTO,
+                    exactValues
+            );
             exactValuesRepository.save(exactValues);
         }
-        else if(requestForFixedValue.getRequestType().equals(RequestType.DEPARTMENT_VALUE)){
-            Department department = departmentRepository
-                    .findById(requestForFixedValue.getDepartmentId())
-                    .orElseThrow(() -> new BadRequestException("Wrong department id!"));
+        else if(request.getRequestType().equals(RequestType.DEPARTMENT_VALUE)){
 
-            DepartmentDTO departmentDTO =
-                    request.departmentDTO();
+            getChangedColumnsOfDepartmentAndSave(
+                    acceptOrDeclineRequest.departmentDTO(), request.getDepartmentId());
 
-            mapperProperties.copyNonNullProperties(departmentDTO, department);
-
-            departmentRepository.save(department);
         }
-        log.info("Changes started");
-        log.info("{}", requestForFixedValue.getChangedColumnWithMessages());
-        for (ChangedColumnWithMessage changedColumnWIthMessage : requestForFixedValue.getChangedColumnWithMessages()) {
-            TableChanges tableChanges =
-                    TableChanges.builder()
-                            .type(requestForFixedValue.getRequestType())
-                            .columnName(changedColumnWIthMessage.columnName())
-                            .newValue(changedColumnWIthMessage.newValue())
-                            .oldValue(changedColumnWIthMessage.oldValue())
-                            .userId(requestForFixedValue.getAdminId())
-                            .build();
-            log.info("Table changes {}", tableChanges);
-            changesRepository.save(tableChanges);
-        }
+        log.info("Table changes are being saved!");
 
-        forChangingValueRepository.save(requestForFixedValue);
+        saveTableChanges(
+                request.getChangedColumnWithMessages(),
+                request.getRequestType(),
+                request.getAdminId()
+        );
+
+        requestRepository.save(request);
 
         return ResponseEntity.ok(new ApiResponse("Accepted successfully!"));
     }
+
+    private void getChangedColumnsOfDepartmentAndSave(
+            DepartmentDTO departmentDTO,
+            String departmentId
+    ){
+        Department department = departmentRepository
+                .findById(departmentId)
+                .orElseThrow(() -> new BadRequestException("Wrong department id!"));
+
+        mapperProperties.copyNonNullProperties(departmentDTO, department);
+
+        departmentRepository.save(department);
+    }
+    private void saveTableChanges(
+            List<ChangedColumnWithMessage<Object>> changedColumns,
+            String requestType,
+            String userId
+
+    ){
+        for (ChangedColumnWithMessage changedColumnWIthMessage : changedColumns) {
+            TableChanges tableChanges =
+                    TableChanges.builder()
+                            .type(requestType)
+                            .columnName(changedColumnWIthMessage.columnName())
+                            .newValue(changedColumnWIthMessage.newValue())
+                            .oldValue(changedColumnWIthMessage.oldValue())
+                            .userId(userId)
+                            .build();
+            log.info("Table changes {}", tableChanges);
+
+            tableChangesRepository.save(tableChanges);
+        }
+    }
+
+    private void getChangedColumnsOfDailyMonitoringPageAndSave(
+            List<ChangedColumnWithMessage<Object>> changedColumns,
+            ExactValuesDTO exactValuesDTO,
+            ExactValues exactValues
+    ){
+        for (ChangedColumnWithMessage<Object> changedColumn : changedColumns ) {
+            if (ifColumnNameExists(changedColumn.columnName())) {
+                saveChangesOfExactValues(exactValuesDTO, exactValues);
+            }
+            else {
+                if (ifThereHasNewColumns(exactValues.getExactValueOfNewColumnList())){
+                    saveChangesOfNewlyAddedColumns(exactValues, changedColumn);
+                }
+            }
+        }
+    }
+
+    private boolean ifColumnNameExists(String columnName){
+        return columnNamesRepository.existsByColumnName(columnName);
+    }
+    private void saveChangesOfExactValues(ExactValuesDTO exactValuesDTO, ExactValues exactValues){ //old columns or default
+        mapperProperties.copyNonNullProperties(exactValuesDTO, exactValues);
+    }
+    private void saveChangesOfNewlyAddedColumns(ExactValues exactValues, ChangedColumnWithMessage<Object> changedColumn){
+
+            for (ExactValueOfNewColumn newColumn : exactValues.getExactValueOfNewColumnList()) {
+                if (newColumn.getName().equals(changedColumn.columnName())) {
+
+                    newColumn.setValue((Integer) changedColumn.newValue());
+                }
+            }
+    }
+    private boolean ifThereHasNewColumns(List<ExactValueOfNewColumn> values){
+        return values == null;
+    }
+
     @Transactional
     public ResponseEntity<?> declineRequest(String requestId, String reason) {
-        RequestForFixedValue requestForFixedValue =
-                forChangingValueRepository.findById(requestId)
+        Request request =
+                requestRepository.findById(requestId)
                         .orElseThrow(() -> new BadRequestException("Request not found!"));
 
-        requestForFixedValue.setStatus(RequestStatus.DECLINED);
+        request.setStatus(RequestStatus.DECLINED);
         //todo: give a reason if request is declined
-        requestForFixedValue.setReason(reason);
+        request.setReason(reason);
 
-        forChangingValueRepository.save(requestForFixedValue);
+        requestRepository.save(request);
+
         return ResponseEntity.ok(new ApiResponse("Request was declined!"));
     }
 }

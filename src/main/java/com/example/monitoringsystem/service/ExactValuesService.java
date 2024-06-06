@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -28,11 +29,11 @@ public class ExactValuesService {
             throw new BadRequestException("Department not found!");
         }
 
-        List<NewColumnsToExactValue> newColumns = new ArrayList<>();
+        List<ExactValueOfNewColumn> newColumns = new ArrayList<>();
 
         if(allColumns.newColumns() != null){
             for (NewColumnModel model : allColumns.newColumns()) {
-                NewColumnsToExactValue newColumn = NewColumnsToExactValue
+                ExactValueOfNewColumn newColumn = ExactValueOfNewColumn
                         .builder()
                         .value(model.value())
                         .name(model.columnName())
@@ -49,13 +50,34 @@ public class ExactValuesService {
                 .bankomats(allColumns.bankomats())
                 .computers(allColumns.computers())
                 .employees(allColumns.employees())
+                .keyboard(allColumns.keyboard())
                 .monitor(allColumns.monitor())
                 .mouse(allColumns.mouse())
                 .printer(allColumns.printer())
-                .newColumnsToExactValueList(newColumns)
+                .exactValueOfNewColumnList(newColumns)
                 .departmentId(departmentId)
                 .build();
         exactValuesRepository.save(exactValues);
+    }
+    public DepartmentFixedData getExactValues(String departmentId){
+
+        ExactValues exactValues =
+                exactValuesRepository.findByDepartmentId(departmentId);
+
+        if (exactValues == null){
+            throw new BadRequestException("There are no fixed values of department!");
+        }
+
+        HashMap<Object, Object> data = new HashMap<>();
+        data.put("mouse",exactValues.getMouse());
+        data.put("computers",exactValues.getComputers());
+        data.put("bankomats",exactValues.getBankomats());
+        data.put("employees",exactValues.getEmployees());
+        data.put("monitor",exactValues.getMonitor());
+        data.put("printer",exactValues.getPrinter());
+        data.put("keyboard",exactValues.getKeyboard());
+
+        return new DepartmentFixedData(departmentId, exactValues.getId(), data);
     }
 
     //            //Firstly, I check if I have a column with this name

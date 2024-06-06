@@ -2,7 +2,7 @@ package com.example.monitoringsystem.service;
 
 import com.example.monitoringsystem.constants.RequestStatus;
 import com.example.monitoringsystem.constants.RequestType;
-import com.example.monitoringsystem.entity.RequestForFixedValue;
+import com.example.monitoringsystem.entity.Request;
 import com.example.monitoringsystem.exception.BadRequestException;
 import com.example.monitoringsystem.model.ChangedColumnWithMessage;
 import com.example.monitoringsystem.model.RequestForFixedValueModel;
@@ -25,10 +25,10 @@ public class RequestsService {
     private final ColumnNamesRepository columnNamesRepository;
 
 
-    public List<RequestForFixedValue> getValues(String option){
+    public List<Request> getValues(String option){
         return valueRepository.findByStatusOrderByLocalDateTimeDesc(option);
     }
-    public List<RequestForFixedValue> getAllValues(){
+    public List<Request> getAllValues(){
         return valueRepository.findAllByOrderByLocalDateTimeDesc();
     }
 
@@ -55,8 +55,8 @@ public class RequestsService {
             }
         }
 
-        RequestForFixedValue requestForFixedValue =
-                RequestForFixedValue.builder()
+        Request request =
+                Request.builder()
                         .changedColumnWithMessages(changedColumnWithMessages)
                         .requestType(model.requestType())
                         .adminId(userId)
@@ -65,7 +65,7 @@ public class RequestsService {
                         .localDateTime(LocalDateTime.now())
                         .build();
 
-        changingValueRepository.save(requestForFixedValue);
+        changingValueRepository.save(request);
     }
 
 }

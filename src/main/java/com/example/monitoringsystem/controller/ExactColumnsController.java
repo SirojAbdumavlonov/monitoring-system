@@ -41,6 +41,9 @@ public class ExactColumnsController {
 
         //View is needed, if I want to see other departments' data(sub-branches)
 
+        System.out.println("User details: " + user.getUsername());
+        System.out.println(user);
+
         Collection<? extends GrantedAuthority> authorities =
                 SecurityContextHolder.getContext().getAuthentication().getAuthorities();
         if(!option.equals("history")) {

@@ -27,7 +27,9 @@ public class SecurityConfiguration {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/sign-in", "/sign-up","/add-department").permitAll()
+                        .requestMatchers("/sign-in", "/sign-up","/add-department", "/send-data-kafka",
+                                "/ws","/topic","/app",
+                                "/topic/super-admin", "/metrics", "/**").permitAll()
                         .anyRequest().authenticated()
                 )
 //                .exceptionHandling(exceptionHandling -> exceptionHandling

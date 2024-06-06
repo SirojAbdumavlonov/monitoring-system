@@ -10,6 +10,7 @@ import com.example.monitoringsystem.tool.MapperProperties;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cglib.core.Local;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import com.example.monitoringsystem.constants.TimeRange;
@@ -49,10 +50,9 @@ public class ExactColumnsService {
         from = dates.from();
         to = dates.to();
 
-
         return getPreviousDaysData(userId, chosenDepartment, from, to, role);
     }
-    public List<ValueWithEfficiency> getPreviousDaysData(String userId,String chosenDepartment,
+    public List<ValueWithEfficiency> getPreviousDaysData(String userId, String chosenDepartment,
                                                          LocalDate from, LocalDate to,
                                                          Collection<? extends GrantedAuthority> role){
 
@@ -61,38 +61,26 @@ public class ExactColumnsService {
         //3. Write a query to find this data(use IN keyword in sql)
         //4. Add it for method in service and ,eventually, to controller
 
-        String departmentId = departmentService.findDepartmentOfUser(userId).getId();
+        String deptIdOfUser = departmentService.findDepartmentOfUser(userId).getId();
 
         List<ExactColumns> exactColumnsList = null;
         List<Efficiency> efficiencyList = null;
 
         if (role.stream().anyMatch(a -> a.getAuthority().equals("USER"))) {
 
-            if (departmentRepository.existsById(departmentId) || departmentRepository.existsByIdOfMainBranchAndId(departmentId, chosenDepartment)) {
+            if (departmentExistsByIdAndByIdOfMainBranch(deptIdOfUser, chosenDepartment)) {
 
-                if (chosenDepartment == null) { //of all departments of user
-
-                    List<String> subBranchesIds =
-                            departmentRepository.findAllByIdOfMainBranch(departmentId);
-
-                    subBranchesIds.add(departmentId);
-
-                    exactColumnsList = exactColumnsRepository.findAllByDepartmentIdInAndDateBetweenOrderByDateDescDepartmentId
-                            (subBranchesIds, from, to);
-                    efficiencyList = efficiencyRepository.findAllByDepartmentIdInAndDateBetweenOrderByDateDescDepartmentId
-                            (subBranchesIds, from, to);
-                    return mergeValueWithEfficiency(efficiencyList, exactColumnsList);
-                    //sub-branches = branches belong to one of main branches
-                }
+                return getMonitoringDataOfDeptOfUserBetweenDates(
+                        deptIdOfUser,
+                        from, to
+                );
             }
         }
         else{ //This is for super admin
-            if(chosenDepartment == null){//if department is     not chosen, show all depts
-                exactColumnsList = exactColumnsRepository
-                        .findAllByDateBetweenOrderByDateDescDepartmentId(from, to);
-                efficiencyList = efficiencyRepository
-                        .findAllByDateBetweenOrderByDateDescDepartmentId(from, to);
-                return mergeValueWithEfficiency(efficiencyList, exactColumnsList);
+
+            if(chosenDepartment == null){
+                //if department is not chosen, show all depts
+                return getMonitoringDataOfAllDeptsForSuperAdminBetweenDates(from, to);
             }
 
         }
@@ -106,18 +94,66 @@ public class ExactColumnsService {
             //It will work if super admin is trying to access it, or
             //If this branch can be accessed by the admin of header branch
 
-            exactColumnsList = exactColumnsRepository.findAllByDepartmentIdAndDateBetweenOrderByDateDesc
-                    (chosenDepartment, from, to);
-
-            efficiencyList = efficiencyRepository.findAllByDepartmentIdAndDateBetweenOrderByDateDesc
-                    (chosenDepartment, from, to);
-
-            return mergeValueWithEfficiency(efficiencyList, exactColumnsList);
-            //view is given department id, which I want to find
+            getMonitoringDataOfChosenDeptBetweenDates(
+                    chosenDepartment, from, to
+            );
         }
         throw new BadRequestException("Error in getting data!");
     }
 
+    private List<ValueWithEfficiency> getMonitoringDataOfChosenDeptBetweenDates(
+        String chosenDepartment,
+        LocalDate from,
+        LocalDate to
+    ){
+        List<ExactColumns> exactColumnsList = exactColumnsRepository.findAllByDepartmentIdAndDateBetweenOrderByDateDesc
+                (chosenDepartment, from, to);
+
+        List<Efficiency> efficiencyList = efficiencyRepository.findAllByDepartmentIdAndDateBetweenOrderByDateDesc
+                (chosenDepartment, from, to);
+
+        return mergeValueWithEfficiency(efficiencyList, exactColumnsList);
+    }
+    private List<ValueWithEfficiency> getMonitoringDataOfDeptOfUserBetweenDates(
+            String departmentOfUser,
+            LocalDate from,
+            LocalDate to
+    ){
+            List<String> subBranchesIds =
+                    departmentRepository.findAllByIdOfMainBranch(departmentOfUser);
+
+            subBranchesIds.add(departmentOfUser);
+
+            List<ExactColumns> exactColumnsList = exactColumnsRepository.findAllByDepartmentIdInAndDateBetweenOrderByDateDescDepartmentId
+                    (subBranchesIds, from, to);
+            List<Efficiency> efficiencyList = efficiencyRepository.findAllByDepartmentIdInAndDateBetweenOrderByDateDescDepartmentId
+                    (subBranchesIds, from, to);
+            return mergeValueWithEfficiency(efficiencyList, exactColumnsList);
+
+            //sub-branches = branches belong to one of main branches
+    }
+    private List<ValueWithEfficiency> getMonitoringDataOfAllDeptsForSuperAdminBetweenDates(
+            LocalDate from,
+            LocalDate to
+    ){
+        List<ExactColumns> exactColumnsList = exactColumnsRepository
+                .findAllByDateBetweenOrderByDateDescDepartmentId(from, to);
+        List<Efficiency> efficiencyList = efficiencyRepository
+                .findAllByDateBetweenOrderByDateDescDepartmentId(from, to);
+        return mergeValueWithEfficiency(efficiencyList, exactColumnsList);
+    }
+
+    private boolean departmentExistsByIdAndByIdOfMainBranch(
+            String departmentId,
+            String chosenDepartment
+    ){
+        return (departmentRepository.existsById(departmentId)
+                ||
+                departmentRepository.existsByIdOfMainBranchAndId
+                        (departmentId, chosenDepartment))
+                &&
+                chosenDepartment == null;
+    }
     public Object getHistoryOfTableFilling(String userId, LocalDate date, String chosenDepartment,
                                     LocalDate from, LocalDate to, String timeRange,
                                     String monthName, int lastNDays, Collection<? extends GrantedAuthority> role){
@@ -174,7 +210,6 @@ public class ExactColumnsService {
                     new ValueWithEfficiency(exactColumnsList.get(i), efficiencyList.get(i))
             );
         }
-
         return valueWithEfficiencies;
     }
 
@@ -242,7 +277,6 @@ public class ExactColumnsService {
 
         ZoneId uzbekistanTimeZone = ZoneId.of("Asia/Tashkent");
 
-
         LocalDate today = LocalDate.now(uzbekistanTimeZone);
 
         if(!departmentRepository.existsById(departmentId)){
@@ -255,42 +289,84 @@ public class ExactColumnsService {
         ExactValues exactValues =
                 exactValuesRepository.findByDepartmentId(departmentId);
 
-        List<NewColumnEfficiency> efficiencyList = null;
+        NewColumnsEfficiencyAndItsTotal efficiencyAndItsTotal = null;
 
-        double newColumnsEfficiency = 0.0;
         if (allColumns.newColumns() != null) {
-            columns = new ArrayList<>();
-            for (NewColumnModel model : allColumns.newColumns()) {
-                columns.add(
-                        NewColumn.builder()
-                                .name(model.columnName())
-                                .value(model.value())
-                                .build()
-                );
-            }
-            List<NewColumnsToExactValue> exactValuesList =
-                    exactValues.getNewColumnsToExactValueList();
 
-            double helper;
-            for (NewColumnsToExactValue newColumnsToExactValue : exactValuesList) {
-                for (NewColumn newColumn : columns) {
-                    if (newColumnsToExactValue.getName().equals(newColumn.getName())) {
-                        helper = getEfficiency(newColumn.getValue(), newColumnsToExactValue.getValue());
-//                        assert false;
-                        efficiencyList.add(
-                                NewColumnEfficiency.builder()
-                                        .name(newColumn.getName())
-                                        .value(helper)
-                                        .build()
-                        );
-                        newColumnsEfficiency += helper;
-                    }
-                }
-            }
+            columns = convertModelIntoNewColumn(allColumns.newColumns());
+
+            List<ExactValueOfNewColumn> exactValuesList =
+                    exactValues.getExactValueOfNewColumnList();
+
+            efficiencyAndItsTotal =
+                    getNewColumnsAndTheirTotal(exactValuesList, columns);
         }
 
         //Find all fixed values of chosen department
 
+        ExactColumns exactColumns = saveExactColumnsWithNewOnes(
+                allColumns,
+                columns,
+                today,
+                departmentId
+        );
+
+        assert efficiencyAndItsTotal != null;
+        List<NewColumnEfficiency> newColumnsEfficiencies =
+                efficiencyAndItsTotal.newColumnEfficiencies();
+        double totalEfficiencyOfNewColumns =
+                efficiencyAndItsTotal.totalOfNewColumnEfficiencies();
+
+        Efficiency efficiency = calculateAndSaveEfficiency(
+                allColumns,
+                exactValues,
+                newColumnsEfficiencies,
+                today,
+                departmentId,
+                totalEfficiencyOfNewColumns
+        );
+
+        return new WholeDepartment<>(exactColumns, efficiency);
+    }
+    private NewColumnsEfficiencyAndItsTotal getNewColumnsAndTheirTotal(
+            List<ExactValueOfNewColumn> exactValuesList,
+            List<NewColumn> columns
+    ){
+        List<NewColumnEfficiency> newColumnsEfficiencies = null;
+
+        double helper;
+
+        double totalEfficiencyOfNewColumns = 0.0;
+
+
+        for (ExactValueOfNewColumn exactValueOfNewColumn : exactValuesList) {
+            for (NewColumn newColumn : columns) {
+                if (exactValueOfNewColumn.getName().equals(newColumn.getName())) {
+                    helper = getEfficiency(newColumn.getValue(), exactValueOfNewColumn.getValue());
+//                        assert false;
+                    newColumnsEfficiencies.add(
+                            NewColumnEfficiency.builder()
+                                    .name(newColumn.getName())
+                                    .value(helper)
+                                    .build()
+                    );
+                    totalEfficiencyOfNewColumns += helper;
+                }
+            }
+        }
+        return new NewColumnsEfficiencyAndItsTotal(
+                newColumnsEfficiencies, totalEfficiencyOfNewColumns
+        );
+    }
+
+    private Efficiency calculateAndSaveEfficiency(
+            AllColumns allColumns,
+            ExactValues exactValues,
+            List<NewColumnEfficiency> newColumnEfficiencies,
+            LocalDate today,
+            String departmentId,
+            double totalEfficiencyOfNewColumns
+    ){
         Efficiency efficiency =
                 Efficiency.builder()
                         .bankomats(getEfficiency(allColumns.bankomats(), exactValues.getBankomats()))
@@ -300,11 +376,39 @@ public class ExactColumnsService {
                         .printer(getEfficiency(allColumns.printer(), exactValues.getPrinter()))
                         .employees(getEfficiency(allColumns.employees(), exactValues.getEmployees()))
                         .keyboard(getEfficiency(allColumns.keyboard(), exactValues.getKeyboard()))
-                        .efficiencyList(efficiencyList)
-                        .totalEfficiency(getTotalEfficiency(allColumns, exactValues, newColumnsEfficiency))
+                        .efficiencyList(newColumnEfficiencies)
+                        .totalEfficiency(getTotalEfficiency(allColumns, exactValues, totalEfficiencyOfNewColumns))
                         .departmentId(departmentId)
                         .date(today)
                         .build();
+        efficiencyRepository.save(efficiency);
+
+        return efficiency;
+    }
+
+    private List<NewColumn> convertModelIntoNewColumn(
+            List<NewColumnModel> newColumnModels
+    ){
+
+        List<NewColumn> columns = new ArrayList<>();
+
+        for (NewColumnModel model : newColumnModels) {
+            columns.add(
+                    NewColumn.builder()
+                            .name(model.columnName())
+                            .value(model.value())
+                            .build()
+            );
+        }
+        return columns;
+    }
+
+    private ExactColumns saveExactColumnsWithNewOnes(
+            AllColumns allColumns,
+            List<NewColumn> newColumns,
+            LocalDate today,
+            String departmentId
+    ){
 
         ExactColumns exactColumns =
                 ExactColumns.builder()
@@ -314,18 +418,18 @@ public class ExactColumnsService {
                         .monitor(allColumns.monitor())
                         .printer(allColumns.printer())
                         .keyboard(allColumns.keyboard())
-                        .newColumns(columns)
+                        .newColumns(newColumns)
                         .date(today)
                         .departmentId(departmentId)
                         .employees(allColumns.employees())
                         .build();
 
-        efficiencyRepository.save(efficiency);
-
         exactColumnsRepository.save(exactColumns);
 
-        return new WholeDepartment<>(exactColumns, efficiency);
+        return exactColumns;
     }
+
+
     private Double getEfficiency(int dailyData, int fixedData){
         System.out.println("daily data = " + dailyData + ", fixed data = " + fixedData);
         return ( (double) dailyData / (double) fixedData) * 100;
@@ -357,11 +461,47 @@ public class ExactColumnsService {
 
         ExactColumnsDTO exactColumnsDTO =
                 updateRequest.exactColumns();//get all changed columns
-        for(ChangedColumn changedColumn: updateRequest.changedColumns()) {
+
+        exactColumns = updateColumnsAndIfExistNewOnesToo(
+                updateRequest.changedColumns(),
+                exactColumnsDTO, exactColumns
+        );
+
+        List<HistoryOfChanges> historyOfChangesList;
+
+        Userr userr =
+                userRepository.findByUserId(currentUserId).
+                        orElseThrow(() -> new BadRequestException("User not found!"));
+
+        if(exactColumns.getHistoryOfChanges() == null){
+            historyOfChangesList = new ArrayList<>();
+        }else {
+            historyOfChangesList = exactColumns.getHistoryOfChanges();
+        }
+
+        log.info("Changes started");
+        historyOfChangesList = getHistoryOfChangesOfColumns(
+                updateRequest.changedColumns(),
+                userr.getUserId(), historyOfChangesList
+        );
+
+        exactColumns.setHistoryOfChanges(historyOfChangesList);
+
+        exactColumnsRepository.save(exactColumns);
+    }
+    private ExactColumns updateColumnsAndIfExistNewOnesToo(
+            List<ChangedColumn> changedColumns,
+            ExactColumnsDTO exactColumnsDTO,
+            ExactColumns exactColumns
+    ){
+        for(ChangedColumn changedColumn: changedColumns) {
             if (columnNamesRepository.existsByColumnName(changedColumn.columnName())) {//check if column was updated from main table
                 //if it is in main table, change the value
                 log.info("dto = {}", exactColumnsDTO);
-                mapperProperties.copyNonNullProperties(exactColumnsDTO, exactColumns);
+
+                exactColumns = saveChangesOfExactColumns(
+                        exactColumns, exactColumnsDTO
+                );
                 //change the value
                 log.info("new obj = {}", exactColumns);
             } else {
@@ -372,46 +512,39 @@ public class ExactColumnsService {
                         }
                     }
                 }
-                //In this line of code, I know that it is newly added column, I want to find it in table of new columns
-                //And update its value
-//            Integer newValue = updateRequest.getNewValue();
-//            Integer oldValue = updateRequest.getOldValue();
-//            for(ValueWithDate value: newColumn.getValues()){
-//                if (value.getValue().equals(oldValue) &&
-//                        value.getLocalDate().isEqual(today)){
-//                    value.setValue(newValue);
-//                }
-//            }
             }
         }
-        List<HistoryOfChanges> historyOfChangesList;
+        return exactColumns;
+    }
+    private List<HistoryOfChanges> getHistoryOfChangesOfColumns(
+            List<ChangedColumn> changedColumns,
+            String idOfUserWhoChanged,
+            List<HistoryOfChanges> historyOfChangesList
+    ){
 
-        Userr userr =
-                userRepository.findByUserId(currentUserId).
-                        orElseThrow(() -> new BadRequestException("User not found!"));
-        if(exactColumns.getHistoryOfChanges() == null){
-            historyOfChangesList = new ArrayList<>();
-        }else {
-            historyOfChangesList = exactColumns.getHistoryOfChanges();
-        }
-        log.info("Changes started");
-        for(ChangedColumn changedColumn: updateRequest.changedColumns()) {
-            log.info("update request {}", updateRequest.changedColumns());
+        for(ChangedColumn changedColumn: changedColumns) {
+            log.info("update request {}", changedColumns);
             HistoryOfChanges historyOfChanges =
                     HistoryOfChanges.builder()
                             .oldValue(changedColumn.oldValue())
                             .newValue(changedColumn.newValue())
                             .columnName(changedColumn.columnName())
-                            .userId(userr.getUserId())
+                            .userId(idOfUserWhoChanged)
                             .createdDateTime(LocalDateTime.now())
                             .build();
             historyOfChangesList.add(historyOfChanges);
         }
-        exactColumns.setHistoryOfChanges(historyOfChangesList);
 
-        exactColumnsRepository.save(exactColumns);
-
+        return historyOfChangesList;
     }
+    private ExactColumns saveChangesOfExactColumns(
+            ExactColumns existingColumns,
+            ExactColumnsDTO changedColumns
+    ){
+        mapperProperties.copyNonNullProperties(changedColumns, existingColumns);
+        return existingColumns;
+    }
+
 
 
 

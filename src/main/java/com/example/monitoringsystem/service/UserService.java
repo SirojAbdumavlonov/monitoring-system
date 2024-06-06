@@ -2,9 +2,7 @@ package com.example.monitoringsystem.service;
 
 import com.example.monitoringsystem.entity.*;
 import com.example.monitoringsystem.exception.BadRequestException;
-import com.example.monitoringsystem.model.AuthenticationResponse;
-import com.example.monitoringsystem.model.SignInRequest;
-import com.example.monitoringsystem.model.SignUpRequest;
+import com.example.monitoringsystem.model.*;
 import com.example.monitoringsystem.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +12,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +57,6 @@ public class UserService {
                 jwtService.generateToken(user)
         );
     }
-    @Transactional
     public AuthenticationResponse signIn(SignInRequest signInRequest){
 
         Userr user =
@@ -77,6 +80,64 @@ public class UserService {
         return new AuthenticationResponse(
                 jwtService.generateToken(user)
         );
+    }
+    public List<UserDataWithDepartment> getNecessaryDataAboutUsers(){
+        List<Userr> allUsers = userRepository.findAll();
+        List<UserDataWithDepartment> userDataWithDepartments =
+                new ArrayList<>(allUsers.size());
+        Department department;
+        for (Userr user: allUsers){
+            department =
+                    departmentRepository.findById
+                            (user.getDepartmentId()).orElseThrow(null);
+            userDataWithDepartments.add(
+                    new UserDataWithDepartment(user.getUserId(), user.getFullName(),
+                            user.getRole(), department.getDepartmentName(), department.getAddress())
+            );
+        }
+        return userDataWithDepartments;
+    }
+    public SearchingUserDataWithDepartmentResponse getSearchingResponse(
+            String searchableWord) throws ExecutionException, InterruptedException {
+
+        CompletableFuture<List<String>> userIds = CompletableFuture.supplyAsync(
+                () -> {
+                    List<Userr> userrList = userRepository.
+                            findByUserIdContainingIgnoreCase(searchableWord);
+                    return userrList.stream()
+                            .map(Userr::getUserId)
+                            .collect(Collectors.toList());
+                }
+        );
+        CompletableFuture<List<String>> userFullNames = CompletableFuture.supplyAsync(
+                () -> {
+                    List<Userr> userrList = userRepository.
+                            findByFullNameContainingIgnoreCase(searchableWord);
+                    return userrList.stream()
+                            .map(Userr::getUserId)
+                            .collect(Collectors.toList());
+                }
+        );
+        CompletableFuture<List<String>> departmentNames = CompletableFuture.supplyAsync(
+                () -> {
+                    List<Department> departmentList =
+                            departmentRepository.
+                                    findByDepartmentNameContainingIgnoreCase(searchableWord);
+                    return departmentList.stream()
+                            .map(Department::getDepartmentName)
+                            .collect(Collectors.toList());
+                }
+        );
+
+        CompletableFuture<Void> waitAllFutures =
+                CompletableFuture.allOf(userIds, userFullNames, departmentNames);
+        waitAllFutures.join();
+
+        SearchingUserDataWithDepartmentResponse response =
+                new SearchingUserDataWithDepartmentResponse(
+                        userIds.get(),userFullNames.get(), departmentNames.get()
+                );
+        return response;
     }
 
 //    public void acceptRequest(String id) {

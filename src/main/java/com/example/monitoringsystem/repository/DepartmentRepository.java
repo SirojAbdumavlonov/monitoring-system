@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface DepartmentRepository extends MongoRepository<Department, String> {
 
     List<Department> findAll();
+    Optional<Department> findById(String departmentID);
 
     Optional<Department> findByDepartmentName(String departmentName);
 
@@ -26,6 +27,5 @@ public interface DepartmentRepository extends MongoRepository<Department, String
     )
     List<String> findAllByIdOfMainBranch(String idOfMainBranch);
 
-    Department findDepartmentById(String id);
-
+    List<Department> findByDepartmentNameContainingIgnoreCase(String departmentName);
 }

@@ -33,5 +33,5 @@ public class ExactValues {
 
     private String departmentId;
 
-    private List<NewColumnsToExactValue> newColumnsToExactValueList;
+    private List<ExactValueOfNewColumn> exactValueOfNewColumnList;
 }

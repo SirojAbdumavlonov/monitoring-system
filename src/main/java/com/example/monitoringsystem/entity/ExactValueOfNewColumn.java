@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class NewColumnsToExactValue {
+public class ExactValueOfNewColumn {
 
     private String name;
 

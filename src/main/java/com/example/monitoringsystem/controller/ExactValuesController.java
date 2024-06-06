@@ -1,5 +1,6 @@
 package com.example.monitoringsystem.controller;
 
+import com.example.monitoringsystem.entity.ExactValues;
 import com.example.monitoringsystem.model.*;
 import com.example.monitoringsystem.security.CurrentUserId;
 import com.example.monitoringsystem.service.ExactValuesService;
@@ -10,6 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @RestController
@@ -34,10 +38,18 @@ public class ExactValuesController {
     }
 
     // daily configuration of the table which is controlled by admins
-
+    @PreAuthorize("hasAnyRole('USER','SUPER_ADMIN')")
+    @GetMapping("/fixed-data/{departmentId}")
+    public ResponseEntity<?> getFixedValue(@PathVariable String departmentId){
+        if(departmentId == null || departmentId.isEmpty()){
+            return ResponseEntity.ok(new ApiResponse("Please join a department to view their details!"));
+        }
+        DepartmentFixedData exactValues = exactValuesService.getExactValues(departmentId);
+        return ResponseEntity.ok(exactValues);
+    }
 
     @PreAuthorize("hasAnyRole('USER','SUPER_ADMIN')")
-    @PostMapping("/update/fixed-data/{departmentId}")
+    @PutMapping("/update/fixed-data/{departmentId}")
     public ResponseEntity<?> changeFixedValue(
             @CurrentUserId UserDetails user,
             @PathVariable String departmentId,
